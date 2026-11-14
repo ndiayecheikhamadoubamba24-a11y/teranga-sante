@@ -13,7 +13,7 @@ Application ludique et confidentielle (VIH, jeunes 18–35 ans, Sénégal).
 1. Dashboard Supabase → **SQL Editor** → exécuter dans l'ordre :
    `supabase/migrations/20261114000000_init.sql`, `20261115000000_admin.sql`, `20261116000000_chat.sql`,
    `20261117000000_super_admin_role.sql` **(seul, puis cliquer Run)**, `20261117000100_super_admin.sql`, `20261118000000_temp_password.sql`,
-   `20261119000000_site.sql`, puis `supabase/seed.sql` (données fictives).
+   `20261119000000_site.sql`, `20261120000000_team.sql`, puis `supabase/seed.sql` (données fictives).
 2. **Authentication → Sign In / Providers** → activer **Allow anonymous sign-ins** (usagers sans compte, pseudo uniquement).
 3. Comptes et données de démo (6 mois de rendez-vous, 14 régions, conversations, signalements) — en local, avec la clé secrète :
    ```bash
@@ -44,6 +44,13 @@ Application ludique et confidentielle (VIH, jeunes 18–35 ans, Sénégal).
 (bouton « Générer »), puis transmet les identifiants. À la première connexion, la personne doit choisir son **mot de passe
 personnel** avant d'accéder à quoi que ce soit : tant qu'il n'est pas changé, la base lui refuse tout droit professionnel
 (vérification côté serveur que le mot de passe a réellement changé). Mot de passe oublié → icône clé dans « Utilisateurs ».
+
+**Équipe d'un centre** (`/equipe`) — le **responsable** crée les comptes infirmières de son centre (mot de passe
+provisoire), les modifie, réinitialise leur mot de passe et les désactive ; il voit pour chaque membre le travail réalisé
+(rendez-vous attribués / venus / absents, actions sur les rendez-vous, conversations, messages, délai moyen de réponse,
+créneaux créés, dernière activité) et un fil d'activité de l'équipe. Le **super admin** voit la même page pour n'importe quel
+centre (sélecteur en en-tête, ou depuis « Centres »). Statistiques agrégées uniquement : jamais de contenu de message.
+Après mise à jour, **redéployer la fonction `manage-users`**.
 
 **Super admin** — gère toute la plateforme : utilisateurs (`/admin/utilisateurs`), centres (`/admin/centres`),
 journal d'activité (`/admin/journal`), vue nationale, signalements, contenus, et agenda / rendez-vous / stocks / tableau

@@ -1,5 +1,6 @@
 import { KeyRound, Pencil, Power, Search, ShieldOff, UserPlus } from 'lucide-react';
 import { CredentialsCard, generatePassword, passwordProblem, TempPasswordField } from '../../components/credentials';
+import { ResetPasswordModal } from '../../components/teamModals';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Empty, Modal, StatusPill, initials, useToast } from '../../components/ui';
 import { usePro } from '../../lib/auth';
@@ -128,7 +129,7 @@ export default function Users() {
         )}
       </section>
 
-      {resetting && <ResetPasswordModal account={resetting} onClose={() => { setResetting(null); load(); }} />}
+      {resetting && <ResetPasswordModal member={resetting} onClose={() => { setResetting(null); load(); }} />}
       {editing && <UserModal account={editing === 'new' ? null : editing} centres={centres} isMe={editing !== 'new' && editing.id === me.id} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); load(); }} />}
     </div>
   );
@@ -190,34 +191,6 @@ function UserModal({ account, centres, isMe, onClose, onSaved }: { account: Acco
       {isMe && <p className="small muted" style={{ margin: 0 }}>Tu ne peux pas modifier ton propre rôle.</p>}
       {!account && <TempPasswordField value={password} onChange={setPassword} />}
       <button className="btn lg" disabled={busy || !valid} onClick={save}>{account ? 'Enregistrer' : <><UserPlus size={18} /> Créer le compte</>}</button>
-      </>}
-    </Modal>
-  );
-}
-
-/** Mot de passe oublié : le super admin donne un nouveau mot de passe provisoire. */
-function ResetPasswordModal({ account, onClose }: { account: Account; onClose: () => void }) {
-  const toast = useToast();
-  const [password, setPassword] = useState(() => generatePassword());
-  const [done, setDone] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const reset = async () => {
-    setBusy(true);
-    try {
-      await manageUsers({ action: 'reset_password', id: account.id, password });
-      setDone(true);
-    } catch (e) {
-      toast((e as Error).message);
-    } finally {
-      setBusy(false);
-    }
-  };
-  return (
-    <Modal title={`Nouveau mot de passe — ${account.display_name}`} onClose={onClose}>
-      {done ? <CredentialsCard name={account.display_name} email={account.email ?? ''} password={password} onDone={onClose} /> : <>
-        <p className="small muted" style={{ margin: 0 }}>L’ancien mot de passe ne fonctionnera plus. À sa prochaine connexion, {account.display_name} devra choisir un nouveau mot de passe personnel.</p>
-        <TempPasswordField value={password} onChange={setPassword} id="reset-pw" />
-        <button className="btn lg" disabled={busy || !!passwordProblem(password)} onClick={reset}><KeyRound size={18} /> Réinitialiser</button>
       </>}
     </Modal>
   );

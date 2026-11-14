@@ -1,9 +1,8 @@
-import { AlertCircle, AlertTriangle, CheckCircle2, Minus, Plus, TriangleAlert, UserPlus } from 'lucide-react';
+import { AlertCircle, AlertTriangle, CheckCircle2, Minus, Plus, TriangleAlert, Users } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useCallback, useEffect, useState } from 'react';
-import { CredentialsCard, generatePassword, passwordProblem, TempPasswordField } from '../components/credentials';
 import { Modal, StatusPill, initials, useToast } from '../components/ui';
 import { usePro } from '../lib/auth';
-import { manageUsers } from '../lib/manageUsers';
 import { useCentreId } from '../lib/centre';
 import { logAction, supabase, type Pro } from '../lib/supabase';
 import { useRealtime } from '../lib/useRealtime';
@@ -30,7 +29,6 @@ export default function StocksTeam() {
   const [stocks, setStocks] = useState<Stock[]>([]);
   const [team, setTeam] = useState<Pro[]>([]);
   const [rupture, setRupture] = useState(false);
-  const [invite, setInvite] = useState(false);
 
   const load = useCallback(async () => {
     const [s, t] = await Promise.all([
@@ -98,7 +96,7 @@ export default function StocksTeam() {
         </div>
       ))}
       <div style={{ textAlign: 'center', marginTop: 12 }}>
-        <button className="btn light" onClick={() => setInvite(true)}><UserPlus size={16} /> Ajouter un membre</button>
+        <Link className="btn light" to="/equipe"><Users size={16} /> Gérer l’équipe et voir son activité</Link>
       </div>
     </section>
   );
@@ -117,7 +115,6 @@ export default function StocksTeam() {
         {tab === 'stocks' ? teamCard : stockCard}
       </div>
       {rupture && <RuptureModal centreId={centreId} proId={pro.id} onClose={() => setRupture(false)} />}
-      {invite && <InviteModal onClose={() => setInvite(false)} onDone={() => { setInvite(false); load(); }} />}
     </div>
   );
 }
@@ -142,39 +139,6 @@ function RuptureModal({ centreId, proId, onClose }: { centreId: string; proId: s
       </div>
       <div className="field"><label htmlFor="rn">Précision (optionnel)</label><textarea id="rn" className="textarea" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Ex : livraison attendue depuis 2 semaines" /></div>
       <button className="btn red lg" onClick={send}>Envoyer l’alerte</button>
-    </Modal>
-  );
-}
-
-function InviteModal({ onClose, onDone }: { onClose: () => void; onDone: () => void }) {
-  const toast = useToast();
-  const [email, setEmail] = useState('');
-  const [name, setName] = useState('');
-  const [specialty, setSpecialty] = useState('');
-  const [password, setPassword] = useState(() => generatePassword());
-  const [busy, setBusy] = useState(false);
-  const [created, setCreated] = useState(false);
-  const send = async () => {
-    setBusy(true);
-    try {
-      // Fonction Edge (clé service côté serveur uniquement) : supabase/functions/manage-users
-      await manageUsers({ action: 'create', email: email.trim().toLowerCase(), password, display_name: name, specialty });
-      setCreated(true);
-    } catch (e) {
-      toast(`Création impossible : ${(e as Error).message}`);
-    } finally {
-      setBusy(false);
-    }
-  };
-  return (
-    <Modal title={created ? 'Compte créé' : 'Ajouter un membre'} onClose={created ? onDone : onClose}>
-      {created ? <CredentialsCard name={name} email={email.trim().toLowerCase()} password={password} onDone={onDone} /> : <>
-        <div className="field"><label htmlFor="ie">Email professionnel</label><input id="ie" className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
-        <div className="field"><label htmlFor="in">Nom affiché aux jeunes</label><input id="in" className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="ex : Awa" /></div>
-        <div className="field"><label htmlFor="is">Spécialité</label><input id="is" className="input" value={specialty} onChange={(e) => setSpecialty(e.target.value)} placeholder="ex : Dépistage et PrEP" /></div>
-        <TempPasswordField value={password} onChange={setPassword} />
-        <button className="btn lg" disabled={busy || !email.includes('@') || name.trim().length < 2 || !!passwordProblem(password)} onClick={send}><UserPlus size={16} /> Créer le compte</button>
-      </>}
     </Modal>
   );
 }

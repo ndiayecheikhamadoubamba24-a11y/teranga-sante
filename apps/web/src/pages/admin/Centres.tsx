@@ -1,5 +1,6 @@
 import { Pencil, Plus, Search, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Empty, Modal, useToast } from '../../components/ui';
 import { SENEGAL_REGIONS } from '../../data/senegal';
 import { useCentre } from '../../lib/centre';
@@ -19,7 +20,8 @@ const hoursLabel = (h: Hours) => [h['mon-fri'] && `Lun–Ven ${h['mon-fri'][0]}�
 // Super admin — gestion des centres de dépistage (carte mobile M4, réservations, stocks).
 export default function Centres() {
   const toast = useToast();
-  const { reload } = useCentre();
+  const { reload, setCentreId } = useCentre();
+  const navigate = useNavigate();
   const [centres, setCentres] = useState<Centre[] | null>(null);
   const [q, setQ] = useState('');
   const [region, setRegion] = useState<number | ''>('');
@@ -81,7 +83,7 @@ export default function Centres() {
                   <td>{regionName(c.region_id)}</td>
                   <td className="small">{hoursLabel(c.opening_hours)}</td>
                   <td className="small">{c.services.map((s) => SERVICE_LABEL[s]).join(', ')}</td>
-                  <td>{staff[c.id] ?? 0}</td>
+                  <td><button className="link" title="Voir l’équipe et son activité" onClick={() => { setCentreId(c.id); navigate('/equipe'); }}>{staff[c.id] ?? 0} membre{(staff[c.id] ?? 0) > 1 ? 's' : ''} →</button></td>
                   <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
                     <button className="icon-btn" aria-label={`Modifier ${c.name}`} onClick={() => setEditing(c)}><Pencil size={17} /></button>
                     <button className="icon-btn" aria-label={`Supprimer ${c.name}`} onClick={() => remove(c)}><Trash2 size={17} color="var(--red)" /></button>

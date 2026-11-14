@@ -279,3 +279,5 @@ table.table { width: 100%; border-collapse: collapse; }
   .site-footer-grid { grid-template-columns: 1fr; }
   .hero-baobi { display: none; }
 }
+.table.compact th, .table.compact td { padding: 8px 8px; }
+.table.compact th { font-size: 12px; }

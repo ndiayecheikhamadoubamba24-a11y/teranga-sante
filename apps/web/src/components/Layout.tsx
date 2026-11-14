@@ -1,6 +1,6 @@
 import {
   BarChart3, Bell, Building2, CalendarDays, ClipboardList, FileText, HelpCircle, Home, LayoutDashboard, Lock, LogOut, MessageCircle, Package, ScrollText, ShieldAlert,
-  User, Users,
+  User, Users, UsersRound,
 } from 'lucide-react';
 import { type ReactNode, useCallback, useEffect, useState } from 'react';
 import { Navigate, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
@@ -16,7 +16,7 @@ type Item = { to: string; label: string; icon: ReactNode; badge?: 'messages' };
 export const HOME_BY_ROLE: Record<ProRole, string> = { nurse: '/tableau-de-bord', manager: '/centre', national_admin: '/national', super_admin: '/national' };
 
 /** Pages liées à un centre : le super admin choisit le centre dans l'en-tête. */
-const CENTRE_PAGES = ['/agenda', '/rendez-vous', '/centre', '/stocks'];
+const CENTRE_PAGES = ['/agenda', '/rendez-vous', '/centre', '/stocks', '/equipe'];
 
 const MENUS: Record<ProRole, Item[]> = {
   nurse: [
@@ -30,7 +30,8 @@ const MENUS: Record<ProRole, Item[]> = {
     { to: '/centre', label: 'Accueil', icon: <Home size={18} /> },
     { to: '/agenda', label: 'Agenda', icon: <CalendarDays size={18} /> },
     { to: '/rendez-vous', label: 'Rendez-vous', icon: <ClipboardList size={18} /> },
-    { to: '/stocks', label: 'Stocks et équipe', icon: <Package size={18} /> },
+    { to: '/equipe', label: 'Équipe', icon: <Users size={18} /> },
+    { to: '/stocks', label: 'Stocks', icon: <Package size={18} /> },
   ],
   national_admin: [
     { to: '/national', label: 'Accueil', icon: <BarChart3 size={18} /> },
@@ -44,7 +45,8 @@ const MENUS: Record<ProRole, Item[]> = {
     { to: '/centre', label: 'Tableau de centre', icon: <LayoutDashboard size={18} /> },
     { to: '/agenda', label: 'Agendas', icon: <CalendarDays size={18} /> },
     { to: '/rendez-vous', label: 'Rendez-vous', icon: <ClipboardList size={18} /> },
-    { to: '/stocks', label: 'Stocks et équipes', icon: <Package size={18} /> },
+    { to: '/equipe', label: 'Équipes des centres', icon: <UsersRound size={18} /> },
+    { to: '/stocks', label: 'Stocks', icon: <Package size={18} /> },
     { to: '/signalements', label: 'Signalements', icon: <ShieldAlert size={18} /> },
     { to: '/contenus', label: 'Contenus', icon: <FileText size={18} /> },
     { to: '/admin/journal', label: 'Journal d’activité', icon: <ScrollText size={18} /> },

@@ -1,7 +1,8 @@
 // Fonction Edge : gestion des comptes professionnels.
 //  - super admin : lister, créer (tout rôle, tout centre) avec mot de passe provisoire, modifier,
 //    réinitialiser le mot de passe, désactiver/réactiver
-//  - responsable de centre : créer une infirmière dans SON centre uniquement
+//  - responsable de centre : créer, modifier (nom, spécialité), réinitialiser le mot de passe,
+//    désactiver/réactiver les infirmières de SON centre uniquement
 // Le mot de passe provisoire doit être changé à la 1re connexion (voir migration 20261118000000_temp_password.sql).
 // Déploiement : supabase functions deploy manage-users
 // La clé service (SUPABASE_SERVICE_ROLE_KEY) est fournie par Supabase et ne quitte jamais le serveur.
@@ -70,11 +71,15 @@ Deno.serve(async (req) => {
     return json({ ok: true, id: created.user.id });
   }
 
-  if (!isSuper) return json({ error: 'réservé au super admin' }, 403);
+  // Au-delà de la création : super admin (tous les comptes) ou responsable (infirmières de SON centre).
+  const isManager = me.role === 'manager' && !!me.centre_id;
+  if (!isSuper && !isManager) return json({ error: 'réservé au super admin et aux responsables de centre' }, 403);
 
   // ---------- Liste des comptes (avec email, dernière connexion, désactivation) ----------
   if (action === 'list') {
-    const { data: pros } = await admin.from('pros').select('*, centre:centres(name)');
+    let q = admin.from('pros').select('*, centre:centres(name)');
+    if (!isSuper) q = q.eq('centre_id', me.centre_id);
+    const { data: pros } = await q;
     const users: Record<string, unknown>[] = [];
     for (let page = 1; page < 20; page++) {
       const { data } = await admin.auth.admin.listUsers({ page, perPage: 1000 });
@@ -97,8 +102,12 @@ Deno.serve(async (req) => {
 
   const id: string = body.id;
   if (!id) return json({ error: 'identifiant requis' }, 400);
-  const { data: target } = await admin.from('pros').select('role').eq('id', id).single();
+  const { data: target } = await admin.from('pros').select('role, centre_id').eq('id', id).single();
   if (!target) return json({ error: 'compte introuvable' }, 404);
+  // Un responsable n'agit que sur les infirmières de son propre centre.
+  if (!isSuper && (target.role !== 'nurse' || target.centre_id !== me.centre_id)) {
+    return json({ error: 'tu ne peux gérer que les infirmières de ton centre' }, 403);
+  }
   const removingSuper = target.role === 'super_admin';
 
   // ---------- Modification ----------
@@ -106,14 +115,16 @@ Deno.serve(async (req) => {
     const patch: Record<string, unknown> = {};
     if (body.display_name) patch.display_name = String(body.display_name).trim();
     if ('specialty' in body) patch.specialty = body.specialty || null;
-    if (body.role) {
+    if (body.role && !isSuper && body.role !== target.role) return json({ error: 'seul le super admin peut changer un rôle' }, 403);
+    if ('centre_id' in body && !isSuper && body.centre_id !== target.centre_id) return json({ error: 'seul le super admin peut changer le centre' }, 403);
+    if (body.role && isSuper) {
       if (!ROLES.includes(body.role)) return json({ error: 'rôle inconnu' }, 400);
       if (id === caller.user.id && body.role !== 'super_admin') return json({ error: 'tu ne peux pas retirer ton propre rôle de super admin' }, 400);
       if (removingSuper && body.role !== 'super_admin' && (await superCount()) <= 1) return json({ error: 'il doit rester au moins un super admin' }, 400);
       patch.role = body.role;
     }
     const role = (patch.role ?? target.role) as string;
-    if ('centre_id' in body || patch.role) patch.centre_id = NEEDS_CENTRE.includes(role) ? body.centre_id ?? null : null;
+    if (isSuper && ('centre_id' in body || patch.role)) patch.centre_id = NEEDS_CENTRE.includes(role) ? body.centre_id ?? null : null;
     if (NEEDS_CENTRE.includes(role) && !patch.centre_id && 'centre_id' in patch) return json({ error: 'un centre est requis pour ce rôle' }, 400);
     const { error } = await admin.from('pros').update(patch).eq('id', id);
     if (error) return json({ error: error.message }, 400);

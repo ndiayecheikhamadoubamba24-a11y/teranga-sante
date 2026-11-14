@@ -18,6 +18,7 @@ const Profile = lazy(() => import('./pages/Profile'));
 const Reports = lazy(() => import('./pages/Reports'));
 const StocksTeam = lazy(() => import('./pages/StocksTeam'));
 const Users = lazy(() => import('./pages/admin/Users'));
+const Team = lazy(() => import('./pages/Team'));
 const Landing = lazy(() => import('./pages/site/Landing'));
 const SiteArticles = lazy(() => import('./pages/site/Articles').then((m) => ({ default: m.ArticleList })));
 const SiteArticle = lazy(() => import('./pages/site/Articles').then((m) => ({ default: m.ArticlePage })));
@@ -68,6 +69,7 @@ export default function App() {
               <Route path="/stocks" element={<Only roles={['manager', 'super_admin']}><NeedCentre><StocksTeam /></NeedCentre></Only>} />
               <Route path="/national" element={<Only roles={['national_admin', 'super_admin']}><National /></Only>} />
               <Route path="/signalements" element={<Only roles={['national_admin', 'super_admin']}><Reports /></Only>} />
+              <Route path="/equipe" element={<Only roles={['manager', 'super_admin']}><NeedCentre><Team /></NeedCentre></Only>} />
               <Route path="/admin/utilisateurs" element={<Only roles={['super_admin']}><Users /></Only>} />
               <Route path="/admin/centres" element={<Only roles={['super_admin']}><Centres /></Only>} />
               <Route path="/admin/journal" element={<Only roles={['super_admin']}><Journal /></Only>} />

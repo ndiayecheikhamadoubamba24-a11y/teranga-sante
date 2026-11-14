@@ -1,11 +1,11 @@
-import { KeyRound, Pencil, Power, Search, ShieldCheck, ShieldOff, UserPlus } from 'lucide-react';
+import { Pencil, Power, Search, ShieldOff, UserPlus } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Empty, Modal, StatusPill, initials, useToast } from '../../components/ui';
 import { usePro } from '../../lib/auth';
 import { ROLE_LABEL } from '../../lib/format';
 import { supabase, type Pro, type ProRole } from '../../lib/supabase';
 
-type Account = Pro & { email: string | null; last_sign_in_at: string | null; disabled: boolean; mfa: boolean };
+type Account = Pro & { email: string | null; last_sign_in_at: string | null; disabled: boolean };
 type CentreRow = { id: string; name: string };
 
 const ROLES: ProRole[] = ['nurse', 'manager', 'national_admin', 'super_admin'];
@@ -47,7 +47,7 @@ export default function Users() {
       setError(`${(e as Error).message}. Vérifie que la fonction « manage-users » est déployée.`);
       // Repli : liste sans email depuis la table pros
       const { data } = await supabase.from('pros').select('*, centre:centres(name)');
-      setAccounts(((data as Pro[]) ?? []).map((p) => ({ ...p, email: null, last_sign_in_at: null, disabled: false, mfa: false })));
+      setAccounts(((data as Pro[]) ?? []).map((p) => ({ ...p, email: null, last_sign_in_at: null, disabled: false })));
     }
   }, []);
   useEffect(() => { load(); }, [load]);
@@ -64,8 +64,8 @@ export default function Users() {
 
   const counts = useMemo(() => Object.fromEntries(ROLES.map((r) => [r, (accounts ?? []).filter((a) => a.role === r).length])), [accounts]);
 
-  async function act(a: Account, action: 'disable' | 'enable' | 'reset_mfa') {
-    const label = { disable: `Désactiver le compte de ${a.display_name} ? Il ne pourra plus se connecter.`, enable: `Réactiver le compte de ${a.display_name} ?`, reset_mfa: `Réinitialiser la validation en 2 étapes de ${a.display_name} ? Il devra scanner un nouveau QR code à sa prochaine connexion.` }[action];
+  async function act(a: Account, action: 'disable' | 'enable') {
+    const label = { disable: `Désactiver le compte de ${a.display_name} ? Il ne pourra plus se connecter.`, enable: `Réactiver le compte de ${a.display_name} ?` }[action];
     if (!confirm(label)) return;
     try {
       await manageUsers({ action, id: a.id });
@@ -108,7 +108,7 @@ export default function Users() {
         </div>
         {accounts === null ? <span className="muted">Chargement…</span> : list.length === 0 ? <Empty title="Aucun utilisateur" /> : (
           <table className="table">
-            <thead><tr><th>Utilisateur</th><th>Rôle</th><th>Centre</th><th>2 étapes</th><th>Dernière connexion</th><th>État</th><th style={{ textAlign: 'right' }}>Actions</th></tr></thead>
+            <thead><tr><th>Utilisateur</th><th>Rôle</th><th>Centre</th><th>Dernière connexion</th><th>État</th><th style={{ textAlign: 'right' }}>Actions</th></tr></thead>
             <tbody>
               {list.map((a) => (
                 <tr key={a.id} style={{ opacity: a.disabled ? 0.55 : 1 }}>
@@ -123,12 +123,10 @@ export default function Users() {
                   </td>
                   <td><span className={`pill ${ROLE_TONE[a.role]} no-dot`}>{ROLE_LABEL[a.role]}</span></td>
                   <td className="small">{a.centre?.name ?? <span className="muted">National</span>}</td>
-                  <td>{a.mfa ? <span className="pill good"><ShieldCheck size={12} /> Activée</span> : <span className="pill warning">À activer</span>}</td>
                   <td className="small">{a.last_sign_in_at ? new Date(a.last_sign_in_at).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' }) : <span className="muted">Jamais</span>}</td>
                   <td>{a.disabled ? <span className="pill muted">Désactivé</span> : NEEDS_CENTRE.includes(a.role) ? <StatusPill status={a.status} /> : <span className="pill good">Actif</span>}</td>
                   <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
                     <button className="icon-btn" title="Modifier" aria-label={`Modifier ${a.display_name}`} onClick={() => setEditing(a)}><Pencil size={17} /></button>
-                    {a.mfa && <button className="icon-btn" title="Réinitialiser la 2e étape" aria-label={`Réinitialiser la 2e étape de ${a.display_name}`} onClick={() => act(a, 'reset_mfa')}><KeyRound size={17} /></button>}
                     {a.id !== me.id && (a.disabled
                       ? <button className="icon-btn" title="Réactiver" aria-label={`Réactiver ${a.display_name}`} onClick={() => act(a, 'enable')}><Power size={17} color="var(--green)" /></button>
                       : <button className="icon-btn" title="Désactiver" aria-label={`Désactiver ${a.display_name}`} onClick={() => act(a, 'disable')}><ShieldOff size={17} color="var(--red)" /></button>)}
@@ -192,7 +190,7 @@ function UserModal({ account, centres, isMe, onClose, onSaved }: { account: Acco
       {role === 'nurse' && <div className="field"><label htmlFor="us">Spécialité</label><input id="us" className="input" value={specialty} onChange={(e) => setSpecialty(e.target.value)} placeholder="ex : Dépistage et PrEP" /></div>}
       {role === 'super_admin' && <div className="banner critical small">Le super admin a accès à toute la plateforme (sauf aux conversations des jeunes). Attribue ce rôle avec prudence.</div>}
       {isMe && <p className="small muted" style={{ margin: 0 }}>Tu ne peux pas modifier ton propre rôle.</p>}
-      {!account && <p className="small muted" style={{ margin: 0 }}>La personne reçoit un email pour choisir son mot de passe, puis active la validation en 2 étapes à sa première connexion.</p>}
+      {!account && <p className="small muted" style={{ margin: 0 }}>La personne reçoit un email pour choisir son mot de passe, puis se connecte à l’espace professionnel.</p>}
       <button className="btn lg" disabled={busy || !valid} onClick={save}>{account ? 'Enregistrer' : <><UserPlus size={18} /> Envoyer l’invitation</>}</button>
     </Modal>
   );

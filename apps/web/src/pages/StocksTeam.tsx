@@ -164,7 +164,7 @@ function InviteModal({ onClose, onDone }: { onClose: () => void; onDone: () => v
       <div className="field"><label htmlFor="ie">Email professionnel</label><input id="ie" className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
       <div className="field"><label htmlFor="in">Nom affiché aux jeunes</label><input id="in" className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="ex : Awa" /></div>
       <div className="field"><label htmlFor="is">Spécialité</label><input id="is" className="input" value={specialty} onChange={(e) => setSpecialty(e.target.value)} placeholder="ex : Dépistage et PrEP" /></div>
-      <p className="small muted" style={{ margin: 0 }}>La personne reçoit un email pour choisir son mot de passe, puis active la validation en 2 étapes à sa première connexion.</p>
+      <p className="small muted" style={{ margin: 0 }}>La personne reçoit un email pour choisir son mot de passe, puis se connecte à l’espace professionnel.</p>
       <button className="btn lg" disabled={busy || !email.includes('@') || name.trim().length < 2} onClick={send}><UserPlus size={16} /> Envoyer l’invitation</button>
     </Modal>
   );

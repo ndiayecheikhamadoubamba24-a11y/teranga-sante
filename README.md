@@ -14,14 +14,13 @@ Application ludique et confidentielle (VIH, jeunes 18–35 ans, Sénégal).
    `supabase/migrations/20261114000000_init.sql`, `20261115000000_admin.sql`, `20261116000000_chat.sql`,
    `20261117000000_super_admin_role.sql` **(seul, puis cliquer Run)**, `20261117000100_super_admin.sql`, puis `supabase/seed.sql` (données fictives).
 2. **Authentication → Sign In / Providers** → activer **Allow anonymous sign-ins** (usagers sans compte, pseudo uniquement).
-3. **Authentication → Multi-Factor** : vérifier que **TOTP** est activé (validation en 2 étapes des professionnels).
-4. Comptes et données de démo (6 mois de rendez-vous, 14 régions, conversations, signalements) — en local, avec la clé secrète :
+3. Comptes et données de démo (6 mois de rendez-vous, 14 régions, conversations, signalements) — en local, avec la clé secrète :
    ```bash
    cd apps/web && npm install
    SUPABASE_SERVICE_ROLE_KEY=... DEMO_PASSWORD='un-mot-de-passe-solide' node scripts/seed-demo.mjs
    ```
    Comptes créés : `superadmin@teranga.demo`, `infirmiere@teranga.demo`, `responsable@teranga.demo`, `cnls@teranga.demo` (+ 2 infirmières).
-5. Gestion des comptes depuis l'admin (inviter, changer de rôle, désactiver, réinitialiser la 2e étape) :
+4. Gestion des comptes depuis l'admin (inviter, changer de rôle, désactiver) :
    `supabase functions deploy manage-users`
 
 ### Créer le premier super admin (sans le script de démo)
@@ -33,7 +32,7 @@ Application ludique et confidentielle (VIH, jeunes 18–35 ans, Sénégal).
    select id, 'super_admin', 'Super Admin' from auth.users where email = 'ton.email@exemple.sn'
    on conflict (id) do update set role = 'super_admin', centre_id = null;
    ```
-3. Se connecter sur l'admin web : il active la validation en 2 étapes, puis crée les centres et invite les autres comptes.
+3. Se connecter sur l'admin web (email + mot de passe), puis créer les centres et inviter les autres comptes.
 
 **Super admin** — gère toute la plateforme : utilisateurs (`/admin/utilisateurs`), centres (`/admin/centres`),
 journal d'activité (`/admin/journal`), vue nationale, signalements, contenus, et agenda / rendez-vous / stocks / tableau
@@ -85,7 +84,7 @@ npm run dev            # http://localhost:5173
 
 | # | Écran | Route | Rôle |
 |---|---|---|---|
-| A1 | Connexion + validation en 2 étapes (TOTP, enrôlement à la 1re connexion) | `/connexion` | tous |
+| A1 | Connexion (email + mot de passe, « Se souvenir de moi ») | `/connexion` | tous |
 | A2 | Tableau de bord infirmière (Rdv du jour, non lus, urgences, présence, statut) | `/tableau-de-bord` | infirmière |
 | A3 | Agenda semaine/jour : créer, bloquer, glisser-déposer, surbrillance temps réel | `/agenda` | infirmière, responsable |
 | A4 | Rendez-vous : recherche par code, filtres, confirmer/reporter/venu/absent, export CSV | `/rendez-vous` | infirmière, responsable |
@@ -98,7 +97,6 @@ npm run dev            # http://localhost:5173
 
 - Toutes les actions sensibles sont inscrites dans `activity_log` (« Accès sécurisé et traçable »).
 - Boucle de démo : réservation mobile → toast + surbrillance dans l'agenda (A3) → région qui s'illumine sur la carte nationale (A9).
-- `VITE_MFA_OPTIONAL=true` dans `apps/web/.env` rend la 2e étape facultative **pour une démo uniquement**.
 - Contours des régions : `apps/web/src/data/senegal.ts`, extraits de `@react-map/senegal` (licence MIT).
 
 ## Modèle de données (résumé)

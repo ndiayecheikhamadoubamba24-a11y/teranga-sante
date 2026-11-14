@@ -1,5 +1,4 @@
-import { ShieldCheck } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { StatusSelect, initials, useToast } from '../components/ui';
 import { useAuth, usePro } from '../lib/auth';
 import { LANG_LABEL, ROLE_LABEL } from '../lib/format';
@@ -12,11 +11,7 @@ export default function Profile() {
   const [name, setName] = useState(pro.display_name);
   const [specialty, setSpecialty] = useState(pro.specialty ?? '');
   const [langs, setLangs] = useState<Lang[]>(pro.languages);
-  const [factors, setFactors] = useState<number | null>(null);
 
-  useEffect(() => {
-    supabase.auth.mfa.listFactors().then(({ data }) => setFactors(data?.totp?.filter((f) => f.status === 'verified').length ?? 0));
-  }, []);
 
   const save = async () => {
     const { error } = await supabase.from('pros').update({ display_name: name.trim(), specialty: specialty || null, languages: langs }).eq('id', pro.id);
@@ -50,14 +45,6 @@ export default function Profile() {
           </div>
         </div>
         <button className="btn" style={{ alignSelf: 'flex-start' }} onClick={save}>Enregistrer</button>
-      </section>
-      <section className="card row">
-        <ShieldCheck color="var(--green)" />
-        <div className="spacer">
-          <strong>Validation en 2 étapes</strong>
-          <div className="small muted">{factors === null ? '…' : factors > 0 ? 'Activée avec une application d’authentification.' : 'Non activée : elle sera demandée à la prochaine connexion.'}</div>
-        </div>
-        <span className={`pill ${factors ? 'good' : 'warning'}`}>{factors ? 'Activée' : 'À activer'}</span>
       </section>
     </div>
   );

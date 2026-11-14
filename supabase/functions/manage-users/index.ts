@@ -1,5 +1,5 @@
 // Fonction Edge : gestion des comptes professionnels.
-//  - super admin : lister, inviter (tout rôle, tout centre), modifier, désactiver/réactiver, réinitialiser la 2e étape
+//  - super admin : lister, inviter (tout rôle, tout centre), modifier, désactiver/réactiver
 //  - responsable de centre : inviter une infirmière dans SON centre uniquement
 // Déploiement : supabase functions deploy manage-users
 // La clé service (SUPABASE_SERVICE_ROLE_KEY) est fournie par Supabase et ne quitte jamais le serveur.
@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
 
   if (!isSuper) return json({ error: 'réservé au super admin' }, 403);
 
-  // ---------- Liste des comptes (avec email, dernière connexion, 2e étape, désactivation) ----------
+  // ---------- Liste des comptes (avec email, dernière connexion, désactivation) ----------
   if (action === 'list') {
     const { data: pros } = await admin.from('pros').select('*, centre:centres(name)');
     const users: Record<string, unknown>[] = [];
@@ -68,13 +68,12 @@ Deno.serve(async (req) => {
     const byId = new Map(users.map((u) => [u.id as string, u]));
     return json({
       users: (pros ?? []).map((p) => {
-        const u = byId.get(p.id) as { email?: string; last_sign_in_at?: string; banned_until?: string; factors?: { status: string }[] } | undefined;
+        const u = byId.get(p.id) as { email?: string; last_sign_in_at?: string; banned_until?: string } | undefined;
         return {
           ...p,
           email: u?.email ?? null,
           last_sign_in_at: u?.last_sign_in_at ?? null,
           disabled: !!u?.banned_until && new Date(u.banned_until) > new Date(),
-          mfa: (u?.factors ?? []).some((f) => f.status === 'verified'),
         };
       }),
     });
@@ -114,14 +113,6 @@ Deno.serve(async (req) => {
     if (error) return json({ error: error.message }, 400);
     if (action === 'disable') await admin.from('pros').update({ status: 'away' }).eq('id', id);
     await log(`user.${action}`, id);
-    return json({ ok: true });
-  }
-
-  // ---------- Réinitialiser la validation en 2 étapes (téléphone perdu) ----------
-  if (action === 'reset_mfa') {
-    const { data } = await admin.auth.admin.mfa.listFactors({ userId: id });
-    for (const f of data?.factors ?? []) await admin.auth.admin.mfa.deleteFactor({ id: f.id, userId: id });
-    await log('user.reset_mfa', id);
     return json({ ok: true });
   }
 

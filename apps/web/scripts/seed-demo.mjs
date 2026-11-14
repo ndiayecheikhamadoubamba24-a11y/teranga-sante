@@ -162,4 +162,4 @@ must(await db.from('chatbot_hits').insert(hits), 'chatbot_hits');
 
 console.log('\nDonnées de démo prêtes. Comptes (mot de passe = DEMO_PASSWORD) :');
 for (const [email, p] of PROS) console.log(`  ${email.padEnd(28)} ${p.role}`);
-console.log('\nÀ la première connexion, chaque compte active la validation en 2 étapes (sauf si VITE_MFA_OPTIONAL=true).');
+console.log('\nConnexion sur l’admin web : email + mot de passe.');

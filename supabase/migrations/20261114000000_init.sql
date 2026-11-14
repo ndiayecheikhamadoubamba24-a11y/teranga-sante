@@ -1,6 +1,6 @@
 -- Teranga Santé — schéma initial
 -- Principe : aucune donnée identifiante côté usager (pseudo + avatar, codes de réservation).
--- Usagers = sessions anonymes Supabase (auth.signInAnonymously). Professionnels = comptes email + MFA.
+-- Usagers = sessions anonymes Supabase (auth.signInAnonymously). Professionnels = comptes email + mot de passe.
 
 create extension if not exists pgcrypto;
 

@@ -4,7 +4,7 @@ import {
 } from 'lucide-react';
 import { type ReactNode, useCallback, useEffect, useState } from 'react';
 import { Navigate, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { MFA_OPTIONAL, useAuth } from '../lib/auth';
+import { useAuth } from '../lib/auth';
 import { ROLE_LABEL } from '../lib/format';
 import { supabase, type ProRole } from '../lib/supabase';
 import { CentreProvider, useCentre } from '../lib/centre';
@@ -87,7 +87,7 @@ function CentreSwitcher() {
 }
 
 export function Layout() {
-  const { loading, session, pro, aal2, setStatus, signOut } = useAuth();
+  const { loading, session, pro, setStatus, signOut } = useAuth();
   const navigate = useNavigate();
   const toast = useToast();
   const isNurse = pro?.role === 'nurse';
@@ -109,7 +109,7 @@ export function Layout() {
   }, undefined, !!pro);
 
   if (loading) return null;
-  if (!session || !pro || (!aal2 && !MFA_OPTIONAL)) return <Navigate to="/connexion" replace />;
+  if (!session || !pro) return <Navigate to="/connexion" replace />;
 
   const subtitle = [ROLE_LABEL[pro.role], pro.centre?.name].filter(Boolean).join(' • ');
   const homeAlerts = pro.role === 'national_admin' || pro.role === 'super_admin' ? '/signalements' : pro.role === 'manager' ? '/stocks' : HOME_BY_ROLE[pro.role];

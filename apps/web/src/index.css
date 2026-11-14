@@ -1,0 +1,23 @@
+@import '@fontsource/nunito/400.css';
+@import '@fontsource/nunito/700.css';
+@import '@fontsource/nunito/900.css';
+
+/* Charte partagée avec l'app mobile */
+:root {
+  --sun: #f5b700;
+  --green: #0f6b3e;
+  --orange: #f26b1d;
+  --night: #14213d;
+  --cream: #fff8ec;
+  --white: #ffffff;
+  --muted: #6b7280;
+  --danger: #c62828;
+  --radius: 16px;
+  font-family: 'Nunito', system-ui, sans-serif;
+  color: var(--night);
+  background: var(--cream);
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; background: var(--cream); }
+button { font: inherit; cursor: pointer; }

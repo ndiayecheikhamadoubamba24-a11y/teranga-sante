@@ -125,6 +125,20 @@ npx expo start         # scanner le QR avec Expo Go
 - Mode discret : secouer le téléphone → faux écran météo ; garder le doigt **3 secondes** sur la température pour revenir.
 - Wolof et pulaar : structure prête dans `src/lib/i18n.ts`, traductions à fournir par des locuteurs natifs.
 
+### Générer l'APK Android (EAS Build, dans le cloud d'Expo — gratuit)
+
+1. Créer un compte gratuit sur https://expo.dev
+2. Depuis `apps/mobile` :
+   ```bash
+   npx eas-cli@latest login
+   npx eas-cli@latest build -p android --profile preview
+   ```
+   Répondre « Yes » pour créer le projet EAS et générer la clé de signature Android.
+3. À la fin (10 à 20 min), EAS affiche un lien et un QR code pour télécharger le fichier `.apk`
+   (à mettre dans `VITE_ANDROID_URL` pour le bouton du site vitrine).
+
+Profil `preview` = APK installable directement ; profil `production` = AAB pour le Google Play Store.
+
 ## 3. Web — site vitrine + espace professionnel
 
 Le même projet `apps/web` contient :

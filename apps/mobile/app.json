@@ -17,7 +17,8 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "sn.teranga.sante"
+      "package": "sn.teranga.sante",
+      "versionCode": 1
     },
     "web": {
       "favicon": "./assets/favicon.png"

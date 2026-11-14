@@ -1,6 +1,8 @@
 -- Teranga Santé — numéro professionnel des infirmières, affiché aux jeunes sur la page du poste de santé.
 -- Renseigné par l'infirmière (profil web) ou son responsable ; vide = pas de numéro affiché.
 
+-- (autonome : crée aussi « bio » si la migration 20261121 n'a pas été exécutée)
+alter table public.pros add column if not exists bio text check (char_length(bio) <= 300);
 alter table public.pros add column if not exists phone text
   check (phone is null or phone ~ '^[0-9 +().-]{7,20}$');
 

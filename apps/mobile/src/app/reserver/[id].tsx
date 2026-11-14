@@ -11,7 +11,7 @@ import { useStore } from '../../lib/store';
 import { supabase } from '../../lib/supabase';
 import { colors, fonts, radius, shadow, spacing } from '../../theme';
 
-type Slot = { id: string; starts_at: string; ends_at: string; service: string; remaining: number };
+type Slot = { id: string; starts_at: string; ends_at: string; service: string; remaining: number; nurse_id: string | null };
 
 const SERVICES = [
   { id: 'screening', label: 'Dépistage' },
@@ -25,7 +25,9 @@ const timeLabel = (iso: string) => new Date(iso).toLocaleTimeString('fr-FR', { h
 
 // M5 — Réservation anonyme en 3 touches : service → créneau → confirmation. Un code remplace le nom.
 export default function Reserver() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  // `nurse` : réservation lancée depuis le profil d'une infirmière (M6) → ses créneaux en priorité.
+  const { id, nurse, nurseName } = useLocalSearchParams<{ id: string; nurse?: string; nurseName?: string }>();
+  const [onlyNurse, setOnlyNurse] = useState(!!nurse);
   const { syncNow, saveBooking } = useStore();
   const [centre, setCentre] = useState<Centre | undefined>(CENTRES.find((c) => c.id === id));
   const [service, setService] = useState<string>('screening');
@@ -55,7 +57,11 @@ export default function Reserver() {
     load();
   }, [id, load]);
 
-  const filtered = useMemo(() => (slots ?? []).filter((s) => s.service === service), [slots, service]);
+  const nurseSlots = useMemo(() => (slots ?? []).filter((s) => s.service === service && s.nurse_id === nurse), [slots, service, nurse]);
+  const filtered = useMemo(
+    () => (onlyNurse && nurse ? nurseSlots : (slots ?? []).filter((s) => s.service === service)),
+    [slots, service, onlyNurse, nurse, nurseSlots],
+  );
   const days = useMemo(() => [...new Set(filtered.map((s) => dayKey(s.starts_at)))], [filtered]);
   const activeDay = day && days.includes(day) ? day : days[0];
   const daySlots = filtered.filter((s) => dayKey(s.starts_at) === activeDay);
@@ -93,7 +99,7 @@ export default function Reserver() {
           <Text style={styles.doneHint}>Ton rappel s’affichera comme « Rendez-vous bien-être ».</Text>
         </View>
         <View style={{ padding: spacing(5), gap: spacing(3) }}>
-          <Button label="Écrire à l’infirmière" icon="chatbubbles" onPress={() => router.push({ pathname: '/discussion', params: { topic: SERVICES.find((x) => x.id === service)?.label === 'PrEP' ? 'PrEP' : 'Dépistage' } })} />
+          <Button label="Écrire à l’infirmière" icon="chatbubbles" onPress={() => router.push({ pathname: '/discussion', params: { topic: SERVICES.find((x) => x.id === service)?.label === 'PrEP' ? 'PrEP' : 'Dépistage', ...(slot?.nurse_id ? { nurse: slot.nurse_id } : nurse ? { nurse } : {}) } })} />
           <Button label="Terminé" variant="light" small onPress={() => router.replace('/accueil')} />
           <PrivacyNote text="Aucun nom, aucun numéro demandé" />
         </View>
@@ -118,10 +124,19 @@ export default function Reserver() {
         </View>
 
         <Text style={styles.step}>2. Créneau</Text>
+        {nurse && (
+          <View style={styles.row}>
+            <Chip label={`Avec ${nurseName ?? 'elle'}`} active={onlyNurse} onPress={() => { setOnlyNurse(true); setSlot(null); }} />
+            <Chip label="Toutes les infirmières" active={!onlyNurse} onPress={() => { setOnlyNurse(false); setSlot(null); }} />
+          </View>
+        )}
+        {nurse && onlyNurse && slots !== null && nurseSlots.length === 0 && (
+          <Text style={styles.empty}>{nurseName ?? 'Cette infirmière'} n’a pas de créneau libre pour ce service cette semaine. Choisis « Toutes les infirmières ».</Text>
+        )}
         {slots === null ? (
           <ActivityIndicator color={colors.green} />
         ) : days.length === 0 ? (
-          <Text style={styles.empty}>{error ? '' : 'Aucun créneau libre cette semaine pour ce service.'}</Text>
+          <Text style={styles.empty}>{error || (nurse && onlyNurse) ? '' : 'Aucun créneau libre cette semaine pour ce service.'}</Text>
         ) : (
           <>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>

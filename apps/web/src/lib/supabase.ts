@@ -31,6 +31,8 @@ export type Pro = {
   centre_id: string | null;
   display_name: string;
   specialty: string | null;
+  /** Présentation affichée aux jeunes (M6). */
+  bio?: string | null;
   languages: Lang[];
   status: ProStatus;
   /** Mot de passe provisoire donné par le super admin : à changer avant tout accès. */

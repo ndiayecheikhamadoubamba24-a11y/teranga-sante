@@ -13,7 +13,7 @@ Application ludique et confidentielle (VIH, jeunes 18–35 ans, Sénégal).
 1. Dashboard Supabase → **SQL Editor** → exécuter dans l'ordre :
    `supabase/migrations/20261114000000_init.sql`, `20261115000000_admin.sql`, `20261116000000_chat.sql`,
    `20261117000000_super_admin_role.sql` **(seul, puis cliquer Run)**, `20261117000100_super_admin.sql`, `20261118000000_temp_password.sql`,
-   `20261119000000_site.sql`, `20261120000000_team.sql`, puis `supabase/seed.sql` (données fictives).
+   `20261119000000_site.sql`, `20261120000000_team.sql`, `20261121000000_nurses.sql`, puis `supabase/seed.sql` (données fictives).
 2. **Authentication → Sign In / Providers** → activer **Allow anonymous sign-ins** (usagers sans compte, pseudo uniquement).
 3. Comptes et données de démo (6 mois de rendez-vous, 14 régions, conversations, signalements) — en local, avec la clé secrète :
    ```bash
@@ -84,7 +84,8 @@ npx expo start         # scanner le QR avec Expo Go
 | 6 | Carte des centres (Leaflet/OSM) | `/carte` | M4 |
 | – | Réservation anonyme (code BAO-XXXX) | `/reserver/[id]` | M5 |
 | 7 | Chatbot Question sans honte | `/chatbot` | M8 |
-| – | Discussion avec une infirmière (écrit, vocal, réservation intégrée, Urgence) + choix de l'infirmière | `/discussion` | M7 (+ M6 simplifié) |
+| – | Infirmières : liste (filtres en ligne / langue / centre) et profil (Poser une question, Réserver, Appeler le centre) | `/infirmieres`, `/infirmieres/[id]` | M6 |
+| – | Discussion avec une infirmière (écrit, vocal, réservation intégrée, Urgence) | `/discussion` | M7 |
 | 8 | Rappel de traitement discret | `/traitement` | M10 |
 | 9 | Profil et progression | `/moi` | M14 |
 | 10 | Mode discret (faux écran météo, secouer) | `/discret` | M13 |

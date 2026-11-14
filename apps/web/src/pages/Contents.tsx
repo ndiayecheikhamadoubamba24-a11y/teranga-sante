@@ -16,6 +16,7 @@ type Item = { kind: 'articles'; v: Article } | { kind: 'quiz'; v: Quiz } | { kin
 const LANGS: Lang[] = ['fr', 'wo', 'ff'];
 const MOODS = { baobi: 'happy', 'baobi-cheer': 'cheer', 'baobi-wave': 'wave', 'baobi-thumb': 'thumb' } as const;
 const ROUTES = [
+  { value: '/infirmieres', label: 'Liste des infirmières' },
   { value: '/discussion', label: 'Discussion avec une infirmière' },
   { value: '/carte', label: 'Carte des centres' },
   { value: '/jeu', label: 'Jeu Vrai ou Faux' },

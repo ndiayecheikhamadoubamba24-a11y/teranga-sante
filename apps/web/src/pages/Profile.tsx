@@ -12,6 +12,7 @@ export default function Profile() {
   const toast = useToast();
   const [name, setName] = useState(pro.display_name);
   const [specialty, setSpecialty] = useState(pro.specialty ?? '');
+  const [bio, setBio] = useState(pro.bio ?? '');
   const [langs, setLangs] = useState<Lang[]>(pro.languages);
 
 
@@ -30,7 +31,7 @@ export default function Profile() {
   };
 
   const save = async () => {
-    const { error } = await supabase.from('pros').update({ display_name: name.trim(), specialty: specialty || null, languages: langs }).eq('id', pro.id);
+    const { error } = await supabase.from('pros').update({ display_name: name.trim(), specialty: specialty || null, languages: langs, ...(pro.role === 'nurse' ? { bio: bio.trim() || null } : {}) }).eq('id', pro.id);
     if (error) return toast(error.message);
     logAction('profile.update', 'pros', pro.id);
     await refresh();
@@ -51,6 +52,13 @@ export default function Profile() {
         </div>
         <div className="field"><label htmlFor="pn">Nom affiché aux jeunes</label><input id="pn" className="input" value={name} onChange={(e) => setName(e.target.value)} /></div>
         {pro.role === 'nurse' && <div className="field"><label htmlFor="ps">Spécialité</label><input id="ps" className="input" value={specialty} onChange={(e) => setSpecialty(e.target.value)} /></div>}
+        {pro.role === 'nurse' && (
+          <div className="field">
+            <label htmlFor="pb">À propos (visible par les jeunes dans l’application)</label>
+            <textarea id="pb" className="textarea" maxLength={300} value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Ex : Infirmière depuis 8 ans, je réponds à tes questions sur le dépistage et la PrEP, en français et en wolof." />
+            <span className="small muted">{bio.length}/300 · Pas d’information personnelle (numéro, adresse).</span>
+          </div>
+        )}
         <div className="field"><label>Langues parlées</label>
           <div className="row">
             {(Object.keys(LANG_LABEL) as Lang[]).map((l) => (

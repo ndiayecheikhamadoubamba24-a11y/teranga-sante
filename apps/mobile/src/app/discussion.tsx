@@ -7,6 +7,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Baobi } from '../components/Baobi';
+import { NURSE_STATUS, NurseAvatar } from '../components/NurseAvatar';
 import { Bubble, Button, Chip, tap } from '../components/ui';
 import { VoiceNote } from '../components/VoiceNote';
 import {
@@ -21,22 +22,10 @@ import { colors, fonts, radius, shadow, spacing } from '../theme';
 const VOICE = { ...RecordingPresets.HIGH_QUALITY, numberOfChannels: 1, sampleRate: 22050, bitRate: 32000 };
 const MAX_VOICE_MS = 60000;
 const QUICK = ['Je voudrais me faire dépister', 'J’ai une question sur la PrEP', 'Comment faire un autotest ?', 'Merci !'];
-const STATUS = { online: { label: 'En ligne', color: '#2EA043' }, busy: { label: 'Occupée', color: colors.sun }, away: { label: 'Absente', color: '#9B927F' } } as const;
+const STATUS = NURSE_STATUS;
 const SAMU = '1515';
 
-const initials = (n: string) => n.split(/\s+/).map((p) => p[0]).slice(0, 2).join('').toUpperCase();
 const time = (iso: string) => new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-
-function NurseAvatar({ nurse, size = 44 }: { nurse: Pick<Nurse, 'display_name' | 'status'> | null; size?: number }) {
-  return (
-    <View style={{ width: size, height: size }}>
-      <View style={[styles.avatar, { width: size, height: size, borderRadius: size / 2 }]}>
-        {nurse ? <Text style={[styles.avatarText, { fontSize: size * 0.36 }]}>{initials(nurse.display_name)}</Text> : <Ionicons name="medkit" size={size * 0.45} color={colors.green} />}
-      </View>
-      {nurse && <View style={[styles.statusDot, { backgroundColor: STATUS[nurse.status].color }]} />}
-    </View>
-  );
-}
 
 // M7 — Discussion avec une infirmière : écrit + vocal, réponses rapides, confidentialité, réservation intégrée, Urgence.
 export default function Discussion() {
@@ -130,7 +119,12 @@ function Intro({ nurses, me, initialNurse, initialTopic, onStarted }: { nurses: 
           {TOPICS.map((t) => <Chip key={t} label={t} active={topic === t} onPress={() => setTopic(t)} />)}
         </View>
 
-        <Text style={styles.label}>Avec qui ?</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Text style={styles.label}>Avec qui ?</Text>
+          <Pressable onPress={() => router.push('/infirmieres')} hitSlop={8}>
+            <Text style={{ fontFamily: fonts.semibold, fontSize: 13, color: colors.green }}>Voir les profils →</Text>
+          </Pressable>
+        </View>
         <Pressable onPress={() => { tap(); setNurseId(null); }} style={[styles.nurseCard, nurseId === null && styles.nurseActive]}>
           <NurseAvatar nurse={null} />
           <View style={{ flex: 1 }}>
@@ -464,8 +458,5 @@ const styles = StyleSheet.create({
   nurseActive: { borderColor: colors.green },
   nurseName: { fontFamily: fonts.bold, fontSize: 15, color: colors.night },
   nurseSub: { fontFamily: fonts.regular, fontSize: 12, color: colors.muted },
-  avatar: { backgroundColor: colors.sunLight, alignItems: 'center', justifyContent: 'center' },
-  avatarText: { fontFamily: fonts.bold, color: colors.greenDark },
-  statusDot: { position: 'absolute', right: 0, bottom: 0, width: 13, height: 13, borderRadius: 7, borderWidth: 2, borderColor: colors.cream },
   privacy: { fontFamily: fonts.regular, fontSize: 12, color: colors.muted, textAlign: 'center' },
 });

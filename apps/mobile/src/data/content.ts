@@ -31,7 +31,7 @@ export const CHATBOT: Record<string, ChatNode> = {
       { label: 'Comment me protéger ?', next: 'proteger' },
       { label: 'Où me faire dépister ?', next: 'depister' },
       { label: 'Et si je suis positif ?', next: 'positif' },
-      { label: 'Parler à une infirmière', route: '/discussion' },
+      { label: 'Parler à une infirmière', route: '/infirmieres' },
     ],
   },
   proteger: {
@@ -39,7 +39,7 @@ export const CHATBOT: Record<string, ChatNode> = {
     message: 'Pour te protéger : le préservatif à chaque rapport, la PrEP si tu es plus exposé·e, et un dépistage régulier. Une infirmière peut t’aider à choisir.',
     options: [
       { label: 'C’est quoi la PrEP ?', next: 'prep' },
-      { label: 'Parler à une infirmière', route: '/discussion' },
+      { label: 'Parler à une infirmière', route: '/infirmieres' },
       { label: 'Autre question', next: 'root' },
     ],
   },
@@ -72,7 +72,7 @@ export const CHATBOT: Record<string, ChatNode> = {
     id: 'positif',
     message: 'Tu n’es pas seul·e. Un traitement efficace existe : bien suivi, il permet de vivre longtemps et en bonne santé. Une infirmière peut t’accompagner dès maintenant.',
     options: [
-      { label: 'Parler à une infirmière', route: '/discussion' },
+      { label: 'Parler à une infirmière', route: '/infirmieres' },
       { label: 'Autre question', next: 'root' },
     ],
   },
@@ -82,7 +82,7 @@ export const CHATBOT: Record<string, ChatNode> = {
     options: [
       { label: 'Comment me protéger ?', next: 'proteger' },
       { label: 'Où me faire dépister ?', next: 'depister' },
-      { label: 'Parler à une infirmière', route: '/discussion' },
+      { label: 'Parler à une infirmière', route: '/infirmieres' },
     ],
   },
 };

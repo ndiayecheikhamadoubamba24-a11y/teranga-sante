@@ -49,9 +49,9 @@ const centres = must(await db.from('centres').select('id, region_id, name'), 'ce
 
 // ---------- Professionnels ----------
 const PROS = [
-  ['infirmiere@teranga.demo', { role: 'nurse', centre_id: C1, display_name: 'Awa Diop', specialty: 'Dépistage et PrEP', languages: ['fr', 'wo'], status: 'online' }],
-  ['infirmiere2@teranga.demo', { role: 'nurse', centre_id: C1, display_name: 'Fatou Ndiaye', specialty: 'Conseil', languages: ['fr', 'wo'], status: 'online' }],
-  ['infirmiere3@teranga.demo', { role: 'nurse', centre_id: C1, display_name: 'Mariama Diallo', specialty: 'Consultation', languages: ['fr', 'ff'], status: 'away' }],
+  ['infirmiere@teranga.demo', { role: 'nurse', centre_id: C1, display_name: 'Awa Diop', specialty: 'Dépistage et PrEP', bio: 'Infirmière depuis 8 ans. Je réponds à tes questions sur le dépistage, l’autotest et la PrEP, sans jugement.', languages: ['fr', 'wo'], status: 'online' }],
+  ['infirmiere2@teranga.demo', { role: 'nurse', centre_id: C1, display_name: 'Fatou Ndiaye', specialty: 'Conseil', bio: 'Conseillère en santé sexuelle. On peut parler de tout : prévention, relations, inquiétudes.', languages: ['fr', 'wo'], status: 'online' }],
+  ['infirmiere3@teranga.demo', { role: 'nurse', centre_id: C1, display_name: 'Mariama Diallo', specialty: 'Consultation', bio: 'J’accompagne les jeunes sous traitement. Je parle français et pulaar.', languages: ['fr', 'ff'], status: 'away' }],
   ['responsable@teranga.demo', { role: 'manager', centre_id: C1, display_name: 'Moussa Sow', specialty: null, languages: ['fr', 'wo'], status: 'online' }],
   ['cnls@teranga.demo', { role: 'national_admin', centre_id: null, display_name: 'Coumba Ba', specialty: null, languages: ['fr'], status: 'online' }],
   ['superadmin@teranga.demo', { role: 'super_admin', centre_id: null, display_name: 'Super Admin', specialty: null, languages: ['fr'], status: 'online' }],

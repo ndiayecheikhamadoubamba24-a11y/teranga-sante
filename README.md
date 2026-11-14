@@ -21,8 +21,13 @@ Application ludique et confidentielle (VIH, jeunes 18–35 ans, Sénégal).
    SUPABASE_SERVICE_ROLE_KEY=... DEMO_PASSWORD='un-mot-de-passe-solide' node scripts/seed-demo.mjs
    ```
    Comptes créés : `superadmin@teranga.demo`, `infirmiere@teranga.demo`, `responsable@teranga.demo`, `cnls@teranga.demo` (+ 2 infirmières).
-4. Gestion des comptes depuis l'admin (créer avec mot de passe provisoire, changer de rôle, réinitialiser le mot de passe, désactiver) :
-   `supabase functions deploy manage-users`
+4. **Déployer la fonction serveur `manage-users`** (obligatoire pour créer des comptes depuis l'admin) :
+   - *Sans installation* : Dashboard Supabase → **Edge Functions** → **Deploy a new function** → **Via Editor** →
+     nommer la fonction exactement `manage-users` → coller le contenu de `supabase/functions/manage-users/index.ts` → **Deploy**.
+     (Laisser « Verify JWT » activé. Les clés serveur sont fournies automatiquement par Supabase.)
+   - *Avec la CLI* : `supabase login`, puis depuis la racine du projet
+     `supabase functions deploy manage-users --project-ref aqmcghhktfsntdcrfxtd`
+   - Après chaque modification du fichier, redéployer.
 
 ### Créer le premier super admin (sans le script de démo)
 

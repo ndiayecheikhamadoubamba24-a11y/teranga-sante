@@ -22,7 +22,8 @@ Deno.serve(async (req) => {
   const token = req.headers.get('Authorization')?.replace('Bearer ', '') ?? '';
   const { data: caller } = await admin.auth.getUser(token);
   if (!caller.user) return json({ error: 'non authentifié' }, 401);
-  const { data: me } = await admin.from('pros').select('role, centre_id, must_change_password').eq('id', caller.user.id).single();
+  const { data: me, error: meErr } = await admin.from('pros').select('role, centre_id, must_change_password').eq('id', caller.user.id).maybeSingle();
+  if (meErr) return json({ error: `base de données pas à jour (${meErr.message}) : exécute les migrations` }, 500);
   if (!me || me.must_change_password) return json({ error: 'accès refusé' }, 403);
   const isSuper = me.role === 'super_admin';
 
@@ -60,7 +61,11 @@ Deno.serve(async (req) => {
       await admin.auth.admin.deleteUser(created.user.id);
       return json({ error: e2.message }, 400);
     }
-    await admin.rpc('mark_temp_password', { p_user_id: created.user.id });
+    const { error: e3 } = await admin.rpc('mark_temp_password', { p_user_id: created.user.id });
+    if (e3) {
+      await admin.auth.admin.deleteUser(created.user.id);
+      return json({ error: `mark_temp_password : ${e3.message}` }, 500);
+    }
     await log(`user.create.${role}`, created.user.id);
     return json({ ok: true, id: created.user.id });
   }
@@ -122,7 +127,8 @@ Deno.serve(async (req) => {
     if (typeof body.password !== 'string' || body.password.length < 8) return json({ error: 'mot de passe provisoire : 8 caractères minimum' }, 400);
     const { error } = await admin.auth.admin.updateUserById(id, { password: body.password });
     if (error) return json({ error: error.message }, 400);
-    await admin.rpc('mark_temp_password', { p_user_id: id });
+    const { error: e3 } = await admin.rpc('mark_temp_password', { p_user_id: id });
+    if (e3) return json({ error: `mark_temp_password : ${e3.message}` }, 500);
     await log('user.reset_password', id);
     return json({ ok: true });
   }

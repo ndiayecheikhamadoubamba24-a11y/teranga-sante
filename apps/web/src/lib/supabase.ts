@@ -5,7 +5,13 @@ const REMEMBER = 'ts.remember';
 export const setRemember = (v: boolean) => localStorage.setItem(REMEMBER, v ? '1' : '0');
 const store = () => (localStorage.getItem(REMEMBER) === '0' ? sessionStorage : localStorage);
 
-export const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_KEY, {
+// Projet Supabase du prototype. La clé « publishable » est publique par conception (la sécurité repose
+// sur les règles RLS) : elle sert de valeur par défaut si apps/web/.env est absent. Ne JAMAIS mettre ici
+// la clé secrète (service_role / sb_secret_…).
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL?.trim() || 'https://aqmcghhktfsntdcrfxtd.supabase.co';
+const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_KEY?.trim() || 'sb_publishable_8pNDm69DoKJ8lgHhDKRivA_2aC_tfhR';
+
+export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: {
     storage: {
       getItem: (k) => sessionStorage.getItem(k) ?? localStorage.getItem(k),

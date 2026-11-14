@@ -8,10 +8,11 @@
 import { createClient } from '@supabase/supabase-js';
 import { readFileSync } from 'node:fs';
 
+const readEnv = () => { try { return readFileSync(new URL('../.env', import.meta.url), 'utf8'); } catch { return ''; } };
 const env = Object.fromEntries(
-  readFileSync(new URL('../.env', import.meta.url), 'utf8').split('\n').filter((l) => l.includes('=') && !l.startsWith('#')).map((l) => [l.split('=')[0].trim(), l.slice(l.indexOf('=') + 1).trim()]),
+  readEnv().split('\n').filter((l) => l.includes('=') && !l.startsWith('#')).map((l) => [l.split('=')[0].trim(), l.slice(l.indexOf('=') + 1).trim()]),
 );
-const URL_ = process.env.SUPABASE_URL ?? env.VITE_SUPABASE_URL;
+const URL_ = process.env.SUPABASE_URL ?? env.VITE_SUPABASE_URL ?? 'https://aqmcghhktfsntdcrfxtd.supabase.co';
 const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const PASSWORD = process.env.DEMO_PASSWORD;
 if (!KEY || !PASSWORD) {

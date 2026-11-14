@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 interface ImportMetaEnv {
-  readonly VITE_SUPABASE_URL: string;
-  readonly VITE_SUPABASE_KEY: string;
+  readonly VITE_SUPABASE_URL?: string;
+  readonly VITE_SUPABASE_KEY?: string;
   /** Lien de téléchargement Android (Play Store ou .apk) affiché sur le site vitrine. */
   readonly VITE_ANDROID_URL?: string;
   /** Lien App Store. */

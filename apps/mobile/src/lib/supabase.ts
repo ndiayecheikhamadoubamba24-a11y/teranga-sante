@@ -2,8 +2,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient } from '@supabase/supabase-js';
 import { AppState, Platform } from 'react-native';
 
-const url = process.env.EXPO_PUBLIC_SUPABASE_URL!;
-const key = process.env.EXPO_PUBLIC_SUPABASE_KEY!;
+// Projet Supabase du prototype. La clé « publishable » est publique par conception (la sécurité repose
+// sur les règles RLS) : elle sert de valeur par défaut si apps/mobile/.env est absent. Ne JAMAIS mettre ici
+// la clé secrète (service_role / sb_secret_…).
+const DEFAULT_URL = 'https://aqmcghhktfsntdcrfxtd.supabase.co';
+const DEFAULT_KEY = 'sb_publishable_8pNDm69DoKJ8lgHhDKRivA_2aC_tfhR';
+
+const url = process.env.EXPO_PUBLIC_SUPABASE_URL?.trim() || DEFAULT_URL;
+const key = process.env.EXPO_PUBLIC_SUPABASE_KEY?.trim() || DEFAULT_KEY;
 
 export const supabase = createClient(url, key, {
   auth: {

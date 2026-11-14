@@ -1,8 +1,10 @@
-import { Pencil, Power, Search, ShieldOff, UserPlus } from 'lucide-react';
+import { KeyRound, Pencil, Power, Search, ShieldOff, UserPlus } from 'lucide-react';
+import { CredentialsCard, generatePassword, passwordProblem, TempPasswordField } from '../../components/credentials';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Empty, Modal, StatusPill, initials, useToast } from '../../components/ui';
 import { usePro } from '../../lib/auth';
 import { ROLE_LABEL } from '../../lib/format';
+import { manageUsers } from '../../lib/manageUsers';
 import { supabase, type Pro, type ProRole } from '../../lib/supabase';
 
 type Account = Pro & { email: string | null; last_sign_in_at: string | null; disabled: boolean };
@@ -11,20 +13,6 @@ type CentreRow = { id: string; name: string };
 const ROLES: ProRole[] = ['nurse', 'manager', 'national_admin', 'super_admin'];
 const NEEDS_CENTRE: ProRole[] = ['nurse', 'manager'];
 const ROLE_TONE: Record<ProRole, string> = { nurse: 'good', manager: 'info', national_admin: 'warning', super_admin: 'critical' };
-
-/** Appel de la fonction Edge (clé service côté serveur uniquement). */
-export async function manageUsers<T = { ok: boolean }>(body: Record<string, unknown>): Promise<T> {
-  const { data, error } = await supabase.functions.invoke('manage-users', { body });
-  if (error) {
-    let msg = error.message;
-    try {
-      const ctx = (error as { context?: Response }).context;
-      if (ctx) msg = (await ctx.json()).error ?? msg;
-    } catch {}
-    throw new Error(msg);
-  }
-  return data as T;
-}
 
 // Super admin — gestion de tous les comptes professionnels.
 export default function Users() {
@@ -37,6 +25,7 @@ export default function Users() {
   const [role, setRole] = useState<ProRole | ''>('');
   const [centre, setCentre] = useState('');
   const [editing, setEditing] = useState<Account | 'new' | null>(null);
+  const [resetting, setResetting] = useState<Account | null>(null);
 
   const load = useCallback(async () => {
     setError(null);
@@ -80,7 +69,7 @@ export default function Users() {
     <div className="page">
       <div className="page-head">
         <h1>Utilisateurs</h1>
-        <button className="btn" onClick={() => setEditing('new')}><UserPlus size={18} /> Inviter un utilisateur</button>
+        <button className="btn" onClick={() => setEditing('new')}><UserPlus size={18} /> Créer un utilisateur</button>
       </div>
 
       <div className="grid grid-4">
@@ -124,9 +113,10 @@ export default function Users() {
                   <td><span className={`pill ${ROLE_TONE[a.role]} no-dot`}>{ROLE_LABEL[a.role]}</span></td>
                   <td className="small">{a.centre?.name ?? <span className="muted">National</span>}</td>
                   <td className="small">{a.last_sign_in_at ? new Date(a.last_sign_in_at).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' }) : <span className="muted">Jamais</span>}</td>
-                  <td>{a.disabled ? <span className="pill muted">Désactivé</span> : NEEDS_CENTRE.includes(a.role) ? <StatusPill status={a.status} /> : <span className="pill good">Actif</span>}</td>
+                  <td>{a.disabled ? <span className="pill muted">Désactivé</span> : a.must_change_password ? <span className="pill warning" title="La personne doit choisir son mot de passe à sa prochaine connexion">Mot de passe provisoire</span> : NEEDS_CENTRE.includes(a.role) ? <StatusPill status={a.status} /> : <span className="pill good">Actif</span>}</td>
                   <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
                     <button className="icon-btn" title="Modifier" aria-label={`Modifier ${a.display_name}`} onClick={() => setEditing(a)}><Pencil size={17} /></button>
+                    {a.id !== me.id && <button className="icon-btn" title="Nouveau mot de passe provisoire" aria-label={`Réinitialiser le mot de passe de ${a.display_name}`} onClick={() => setResetting(a)}><KeyRound size={17} /></button>}
                     {a.id !== me.id && (a.disabled
                       ? <button className="icon-btn" title="Réactiver" aria-label={`Réactiver ${a.display_name}`} onClick={() => act(a, 'enable')}><Power size={17} color="var(--green)" /></button>
                       : <button className="icon-btn" title="Désactiver" aria-label={`Désactiver ${a.display_name}`} onClick={() => act(a, 'disable')}><ShieldOff size={17} color="var(--red)" /></button>)}
@@ -138,6 +128,7 @@ export default function Users() {
         )}
       </section>
 
+      {resetting && <ResetPasswordModal account={resetting} onClose={() => { setResetting(null); load(); }} />}
       {editing && <UserModal account={editing === 'new' ? null : editing} centres={centres} isMe={editing !== 'new' && editing.id === me.id} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); load(); }} />}
     </div>
   );
@@ -150,17 +141,23 @@ function UserModal({ account, centres, isMe, onClose, onSaved }: { account: Acco
   const [specialty, setSpecialty] = useState(account?.specialty ?? '');
   const [role, setRole] = useState<ProRole>(account?.role ?? 'nurse');
   const [centreId, setCentreId] = useState(account?.centre_id ?? centres[0]?.id ?? '');
+  const [password, setPassword] = useState(() => generatePassword());
   const [busy, setBusy] = useState(false);
+  const [created, setCreated] = useState(false);
   const needsCentre = NEEDS_CENTRE.includes(role);
-  const valid = name.trim().length >= 2 && (!needsCentre || !!centreId) && (account || email.includes('@'));
+  const valid = name.trim().length >= 2 && (!needsCentre || !!centreId) && (account || (email.includes('@') && !passwordProblem(password)));
 
   const save = async () => {
     setBusy(true);
     try {
-      if (account) await manageUsers({ action: 'update', id: account.id, display_name: name, specialty, role, centre_id: needsCentre ? centreId : null });
-      else await manageUsers({ action: 'invite', email, display_name: name, specialty, role, centre_id: needsCentre ? centreId : null });
-      toast(account ? 'Compte mis à jour' : `Invitation envoyée à ${email}`);
-      onSaved();
+      if (account) {
+        await manageUsers({ action: 'update', id: account.id, display_name: name, specialty, role, centre_id: needsCentre ? centreId : null });
+        toast('Compte mis à jour');
+        onSaved();
+      } else {
+        await manageUsers({ action: 'create', email: email.trim().toLowerCase(), password, display_name: name, specialty, role, centre_id: needsCentre ? centreId : null });
+        setCreated(true);
+      }
     } catch (e) {
       toast((e as Error).message);
     } finally {
@@ -169,7 +166,8 @@ function UserModal({ account, centres, isMe, onClose, onSaved }: { account: Acco
   };
 
   return (
-    <Modal title={account ? `Modifier ${account.display_name}` : 'Inviter un utilisateur'} onClose={onClose}>
+    <Modal title={account ? `Modifier ${account.display_name}` : created ? 'Compte créé' : 'Créer un utilisateur'} onClose={created ? onSaved : onClose}>
+      {created ? <CredentialsCard name={name} email={email.trim().toLowerCase()} password={password} onDone={onSaved} /> : <>
       {!account && <div className="field"><label htmlFor="ue">Email professionnel</label><input id="ue" className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} /></div>}
       <div className="field"><label htmlFor="un">Nom affiché</label><input id="un" className="input" value={name} onChange={(e) => setName(e.target.value)} /></div>
       <div className="grid grid-2" style={{ gap: 12 }}>
@@ -190,8 +188,37 @@ function UserModal({ account, centres, isMe, onClose, onSaved }: { account: Acco
       {role === 'nurse' && <div className="field"><label htmlFor="us">Spécialité</label><input id="us" className="input" value={specialty} onChange={(e) => setSpecialty(e.target.value)} placeholder="ex : Dépistage et PrEP" /></div>}
       {role === 'super_admin' && <div className="banner critical small">Le super admin a accès à toute la plateforme (sauf aux conversations des jeunes). Attribue ce rôle avec prudence.</div>}
       {isMe && <p className="small muted" style={{ margin: 0 }}>Tu ne peux pas modifier ton propre rôle.</p>}
-      {!account && <p className="small muted" style={{ margin: 0 }}>La personne reçoit un email pour choisir son mot de passe, puis se connecte à l’espace professionnel.</p>}
-      <button className="btn lg" disabled={busy || !valid} onClick={save}>{account ? 'Enregistrer' : <><UserPlus size={18} /> Envoyer l’invitation</>}</button>
+      {!account && <TempPasswordField value={password} onChange={setPassword} />}
+      <button className="btn lg" disabled={busy || !valid} onClick={save}>{account ? 'Enregistrer' : <><UserPlus size={18} /> Créer le compte</>}</button>
+      </>}
+    </Modal>
+  );
+}
+
+/** Mot de passe oublié : le super admin donne un nouveau mot de passe provisoire. */
+function ResetPasswordModal({ account, onClose }: { account: Account; onClose: () => void }) {
+  const toast = useToast();
+  const [password, setPassword] = useState(() => generatePassword());
+  const [done, setDone] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const reset = async () => {
+    setBusy(true);
+    try {
+      await manageUsers({ action: 'reset_password', id: account.id, password });
+      setDone(true);
+    } catch (e) {
+      toast((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <Modal title={`Nouveau mot de passe — ${account.display_name}`} onClose={onClose}>
+      {done ? <CredentialsCard name={account.display_name} email={account.email ?? ''} password={password} onDone={onClose} /> : <>
+        <p className="small muted" style={{ margin: 0 }}>L’ancien mot de passe ne fonctionnera plus. À sa prochaine connexion, {account.display_name} devra choisir un nouveau mot de passe personnel.</p>
+        <TempPasswordField value={password} onChange={setPassword} id="reset-pw" />
+        <button className="btn lg" disabled={busy || !!passwordProblem(password)} onClick={reset}><KeyRound size={18} /> Réinitialiser</button>
+      </>}
     </Modal>
   );
 }

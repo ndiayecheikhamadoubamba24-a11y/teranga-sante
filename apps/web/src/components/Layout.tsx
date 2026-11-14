@@ -109,7 +109,7 @@ export function Layout() {
   }, undefined, !!pro);
 
   if (loading) return null;
-  if (!session || !pro) return <Navigate to="/connexion" replace />;
+  if (!session || !pro || pro.must_change_password) return <Navigate to="/connexion" replace />;
 
   const subtitle = [ROLE_LABEL[pro.role], pro.centre?.name].filter(Boolean).join(' • ');
   const homeAlerts = pro.role === 'national_admin' || pro.role === 'super_admin' ? '/signalements' : pro.role === 'manager' ? '/stocks' : HOME_BY_ROLE[pro.role];

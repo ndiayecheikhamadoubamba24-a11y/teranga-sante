@@ -1,14 +1,16 @@
-import { Lock, ShieldCheck, User } from 'lucide-react';
+import { KeyRound, Lock, ShieldCheck, User } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { Baobi } from '../components/Baobi';
 import { Village, WaxBand } from '../components/Decor';
 import { HOME_BY_ROLE } from '../components/Layout';
 import { Logo } from '../components/ui';
+import { passwordProblem } from '../components/credentials';
 import { fetchPro, useAuth } from '../lib/auth';
 import { logAction, setRemember, supabase } from '../lib/supabase';
 
 // A1 — Connexion : identifiant professionnel (email) et mot de passe.
+// 1re connexion avec le mot de passe provisoire du super admin → choix obligatoire d'un mot de passe personnel.
 export default function Login() {
   const { session, pro, refresh } = useAuth();
   const navigate = useNavigate();
@@ -17,8 +19,34 @@ export default function Login() {
   const [remember, setRememberState] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [newPw, setNewPw] = useState('');
+  const [confirmPw, setConfirmPw] = useState('');
 
-  if (session && pro) return <Navigate to={HOME_BY_ROLE[pro.role]} replace />;
+  const mustChange = !!(session && pro?.must_change_password);
+  if (session && pro && !mustChange) return <Navigate to={HOME_BY_ROLE[pro.role]} replace />;
+
+  async function submitNewPassword(e: FormEvent) {
+    e.preventDefault();
+    setError(null);
+    const problem = passwordProblem(newPw);
+    if (problem) return setError(`Mot de passe trop faible : ${problem}.`);
+    if (newPw !== confirmPw) return setError('Les deux mots de passe ne sont pas identiques.');
+    setBusy(true);
+    const { error: err } = await supabase.auth.updateUser({ password: newPw });
+    if (err) {
+      setBusy(false);
+      return setError(/different/i.test(err.message) ? 'Choisis un mot de passe différent de celui qu’on t’a donné.' : err.message);
+    }
+    const { data: ok } = await supabase.rpc('password_changed');
+    if (!ok) {
+      setBusy(false);
+      return setError('Le mot de passe n’a pas pu être changé. Réessaie.');
+    }
+    logAction('auth.password_changed');
+    await refresh();
+    setBusy(false);
+    if (pro) navigate(HOME_BY_ROLE[pro.role], { replace: true });
+  }
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -37,6 +65,8 @@ export default function Login() {
       return setError('Ce compte n’a pas accès à l’espace professionnel.');
     }
     await refresh();
+    setBusy(false);
+    if (p.must_change_password) return; // l'écran « nouveau mot de passe » s'affiche
     logAction('auth.login');
     navigate(HOME_BY_ROLE[p.role], { replace: true });
   }
@@ -58,6 +88,30 @@ export default function Login() {
         </div>
 
         <div style={{ padding: '48px 44px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          {mustChange ? (
+            <form onSubmit={submitNewPassword} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <h1 style={{ fontSize: 22 }}>Bienvenue {pro?.display_name} !</h1>
+              <p className="muted" style={{ margin: 0 }}>
+                Pour sécuriser ton compte, remplace le mot de passe provisoire qu’on t’a donné par ton <strong>mot de passe personnel</strong>.
+              </p>
+              <label className="search" style={{ maxWidth: 'none', padding: '10px 16px' }}>
+                <KeyRound size={18} />
+                <input type="password" autoComplete="new-password" required autoFocus placeholder="Nouveau mot de passe" value={newPw} onChange={(e) => setNewPw(e.target.value)} aria-label="Nouveau mot de passe" />
+              </label>
+              <label className="search" style={{ maxWidth: 'none', padding: '10px 16px' }}>
+                <KeyRound size={18} />
+                <input type="password" autoComplete="new-password" required placeholder="Confirmer le mot de passe" value={confirmPw} onChange={(e) => setConfirmPw(e.target.value)} aria-label="Confirmer le mot de passe" />
+              </label>
+              <ul className="small muted" style={{ margin: 0, paddingLeft: 18 }}>
+                <li style={{ color: newPw.length >= 8 ? 'var(--green)' : undefined }}>8 caractères minimum</li>
+                <li style={{ color: /[A-Za-z]/.test(newPw) && /[0-9]/.test(newPw) ? 'var(--green)' : undefined }}>au moins une lettre et un chiffre</li>
+                <li style={{ color: newPw && newPw === confirmPw ? 'var(--green)' : undefined }}>les deux saisies identiques</li>
+              </ul>
+              {error && <div className="banner critical small">{error}</div>}
+              <button className="btn lg" disabled={busy}>{busy ? 'Enregistrement…' : 'Enregistrer et accéder à mon compte'}</button>
+              <button type="button" className="link" style={{ alignSelf: 'center' }} onClick={() => supabase.auth.signOut()}>Ce n’est pas moi</button>
+            </form>
+          ) : (
           <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <h1 style={{ fontSize: 24 }}>Connexion</h1>
             <label className="search" style={{ maxWidth: 'none', padding: '10px 16px' }}>
@@ -77,6 +131,7 @@ export default function Login() {
               <ShieldCheck size={16} color="var(--green)" /> Accès sécurisé et traçable
             </div>
           </form>
+          )}
         </div>
       </div>
     </div>

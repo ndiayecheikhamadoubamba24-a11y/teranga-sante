@@ -12,7 +12,8 @@ Application ludique et confidentielle (VIH, jeunes 18–35 ans, Sénégal).
 
 1. Dashboard Supabase → **SQL Editor** → exécuter dans l'ordre :
    `supabase/migrations/20261114000000_init.sql`, `20261115000000_admin.sql`, `20261116000000_chat.sql`,
-   `20261117000000_super_admin_role.sql` **(seul, puis cliquer Run)**, `20261117000100_super_admin.sql`, puis `supabase/seed.sql` (données fictives).
+   `20261117000000_super_admin_role.sql` **(seul, puis cliquer Run)**, `20261117000100_super_admin.sql`, `20261118000000_temp_password.sql`,
+   puis `supabase/seed.sql` (données fictives).
 2. **Authentication → Sign In / Providers** → activer **Allow anonymous sign-ins** (usagers sans compte, pseudo uniquement).
 3. Comptes et données de démo (6 mois de rendez-vous, 14 régions, conversations, signalements) — en local, avec la clé secrète :
    ```bash
@@ -20,7 +21,7 @@ Application ludique et confidentielle (VIH, jeunes 18–35 ans, Sénégal).
    SUPABASE_SERVICE_ROLE_KEY=... DEMO_PASSWORD='un-mot-de-passe-solide' node scripts/seed-demo.mjs
    ```
    Comptes créés : `superadmin@teranga.demo`, `infirmiere@teranga.demo`, `responsable@teranga.demo`, `cnls@teranga.demo` (+ 2 infirmières).
-4. Gestion des comptes depuis l'admin (inviter, changer de rôle, désactiver) :
+4. Gestion des comptes depuis l'admin (créer avec mot de passe provisoire, changer de rôle, réinitialiser le mot de passe, désactiver) :
    `supabase functions deploy manage-users`
 
 ### Créer le premier super admin (sans le script de démo)
@@ -32,7 +33,12 @@ Application ludique et confidentielle (VIH, jeunes 18–35 ans, Sénégal).
    select id, 'super_admin', 'Super Admin' from auth.users where email = 'ton.email@exemple.sn'
    on conflict (id) do update set role = 'super_admin', centre_id = null;
    ```
-3. Se connecter sur l'admin web (email + mot de passe), puis créer les centres et inviter les autres comptes.
+3. Se connecter sur l'admin web (email + mot de passe), puis créer les centres et les comptes des autres utilisateurs.
+
+**Création des comptes** — le super admin (ou le responsable, pour son centre) saisit l'email et un **mot de passe provisoire**
+(bouton « Générer »), puis transmet les identifiants. À la première connexion, la personne doit choisir son **mot de passe
+personnel** avant d'accéder à quoi que ce soit : tant qu'il n'est pas changé, la base lui refuse tout droit professionnel
+(vérification côté serveur que le mot de passe a réellement changé). Mot de passe oublié → icône clé dans « Utilisateurs ».
 
 **Super admin** — gère toute la plateforme : utilisateurs (`/admin/utilisateurs`), centres (`/admin/centres`),
 journal d'activité (`/admin/journal`), vue nationale, signalements, contenus, et agenda / rendez-vous / stocks / tableau

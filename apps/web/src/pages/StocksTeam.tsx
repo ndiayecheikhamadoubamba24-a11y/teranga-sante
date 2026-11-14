@@ -1,7 +1,9 @@
 import { AlertCircle, AlertTriangle, CheckCircle2, Minus, Plus, TriangleAlert, UserPlus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
+import { CredentialsCard, generatePassword, passwordProblem, TempPasswordField } from '../components/credentials';
 import { Modal, StatusPill, initials, useToast } from '../components/ui';
 import { usePro } from '../lib/auth';
+import { manageUsers } from '../lib/manageUsers';
 import { useCentreId } from '../lib/centre';
 import { logAction, supabase, type Pro } from '../lib/supabase';
 import { useRealtime } from '../lib/useRealtime';
@@ -149,23 +151,30 @@ function InviteModal({ onClose, onDone }: { onClose: () => void; onDone: () => v
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [specialty, setSpecialty] = useState('');
+  const [password, setPassword] = useState(() => generatePassword());
   const [busy, setBusy] = useState(false);
+  const [created, setCreated] = useState(false);
   const send = async () => {
     setBusy(true);
-    // Fonction Edge (clé service côté serveur uniquement) : supabase/functions/manage-users
-    const { error } = await supabase.functions.invoke('manage-users', { body: { action: 'invite', email, display_name: name, specialty } });
-    setBusy(false);
-    if (error) return toast(`Invitation impossible : ${error.message}`);
-    toast(`Invitation envoyée à ${email}`);
-    onDone();
+    try {
+      // Fonction Edge (clé service côté serveur uniquement) : supabase/functions/manage-users
+      await manageUsers({ action: 'create', email: email.trim().toLowerCase(), password, display_name: name, specialty });
+      setCreated(true);
+    } catch (e) {
+      toast(`Création impossible : ${(e as Error).message}`);
+    } finally {
+      setBusy(false);
+    }
   };
   return (
-    <Modal title="Ajouter un membre" onClose={onClose}>
-      <div className="field"><label htmlFor="ie">Email professionnel</label><input id="ie" className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
-      <div className="field"><label htmlFor="in">Nom affiché aux jeunes</label><input id="in" className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="ex : Awa" /></div>
-      <div className="field"><label htmlFor="is">Spécialité</label><input id="is" className="input" value={specialty} onChange={(e) => setSpecialty(e.target.value)} placeholder="ex : Dépistage et PrEP" /></div>
-      <p className="small muted" style={{ margin: 0 }}>La personne reçoit un email pour choisir son mot de passe, puis se connecte à l’espace professionnel.</p>
-      <button className="btn lg" disabled={busy || !email.includes('@') || name.trim().length < 2} onClick={send}><UserPlus size={16} /> Envoyer l’invitation</button>
+    <Modal title={created ? 'Compte créé' : 'Ajouter un membre'} onClose={created ? onDone : onClose}>
+      {created ? <CredentialsCard name={name} email={email.trim().toLowerCase()} password={password} onDone={onDone} /> : <>
+        <div className="field"><label htmlFor="ie">Email professionnel</label><input id="ie" className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
+        <div className="field"><label htmlFor="in">Nom affiché aux jeunes</label><input id="in" className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="ex : Awa" /></div>
+        <div className="field"><label htmlFor="is">Spécialité</label><input id="is" className="input" value={specialty} onChange={(e) => setSpecialty(e.target.value)} placeholder="ex : Dépistage et PrEP" /></div>
+        <TempPasswordField value={password} onChange={setPassword} />
+        <button className="btn lg" disabled={busy || !email.includes('@') || name.trim().length < 2 || !!passwordProblem(password)} onClick={send}><UserPlus size={16} /> Créer le compte</button>
+      </>}
     </Modal>
   );
 }

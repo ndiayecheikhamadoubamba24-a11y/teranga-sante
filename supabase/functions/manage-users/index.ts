@@ -1,6 +1,8 @@
 // Fonction Edge : gestion des comptes professionnels.
-//  - super admin : lister, inviter (tout rôle, tout centre), modifier, désactiver/réactiver
-//  - responsable de centre : inviter une infirmière dans SON centre uniquement
+//  - super admin : lister, créer (tout rôle, tout centre) avec mot de passe provisoire, modifier,
+//    réinitialiser le mot de passe, désactiver/réactiver
+//  - responsable de centre : créer une infirmière dans SON centre uniquement
+// Le mot de passe provisoire doit être changé à la 1re connexion (voir migration 20261118000000_temp_password.sql).
 // Déploiement : supabase functions deploy manage-users
 // La clé service (SUPABASE_SERVICE_ROLE_KEY) est fournie par Supabase et ne quitte jamais le serveur.
 import { createClient } from 'npm:@supabase/supabase-js@2.45.4';
@@ -20,18 +22,19 @@ Deno.serve(async (req) => {
   const token = req.headers.get('Authorization')?.replace('Bearer ', '') ?? '';
   const { data: caller } = await admin.auth.getUser(token);
   if (!caller.user) return json({ error: 'non authentifié' }, 401);
-  const { data: me } = await admin.from('pros').select('role, centre_id').eq('id', caller.user.id).single();
-  if (!me) return json({ error: 'accès refusé' }, 403);
+  const { data: me } = await admin.from('pros').select('role, centre_id, must_change_password').eq('id', caller.user.id).single();
+  if (!me || me.must_change_password) return json({ error: 'accès refusé' }, 403);
   const isSuper = me.role === 'super_admin';
 
   const body = await req.json().catch(() => ({}));
-  const action = body.action ?? 'invite';
+  const action = body.action;
   const log = (a: string, id: string) => admin.from('activity_log').insert({ actor_id: caller.user!.id, action: a, entity: 'pros', entity_id: id });
   const superCount = async () => (await admin.from('pros').select('id', { count: 'exact', head: true }).eq('role', 'super_admin')).count ?? 0;
 
-  // ---------- Invitation ----------
-  if (action === 'invite') {
-    const { email, display_name, specialty } = body;
+  // ---------- Création d'un compte avec mot de passe provisoire ----------
+  // Le compte est confirmé d'office ; la personne devra choisir son propre mot de passe à la 1re connexion.
+  if (action === 'create') {
+    const { email, password, display_name, specialty } = body;
     let role: string = body.role ?? 'nurse';
     let centre_id: string | null = body.centre_id ?? null;
     if (!isSuper) {
@@ -40,18 +43,26 @@ Deno.serve(async (req) => {
       centre_id = me.centre_id;
     }
     if (typeof email !== 'string' || !email.includes('@') || typeof display_name !== 'string' || display_name.trim().length < 2) return json({ error: 'email et nom requis' }, 400);
+    if (typeof password !== 'string' || password.length < 8) return json({ error: 'mot de passe provisoire : 8 caractères minimum' }, 400);
     if (!ROLES.includes(role)) return json({ error: 'rôle inconnu' }, 400);
     if (NEEDS_CENTRE.includes(role) && !centre_id) return json({ error: 'un centre est requis pour ce rôle' }, 400);
     if (!NEEDS_CENTRE.includes(role)) centre_id = null;
 
-    const { data: invited, error } = await admin.auth.admin.inviteUserByEmail(email.trim().toLowerCase());
-    if (error || !invited.user) return json({ error: error?.message ?? 'invitation impossible' }, 400);
+    const { data: created, error } = await admin.auth.admin.createUser({ email: email.trim().toLowerCase(), password, email_confirm: true });
+    if (error || !created.user) {
+      const msg = error?.message?.includes('already') ? 'un compte existe déjà avec cet email' : error?.message ?? 'création impossible';
+      return json({ error: msg }, 400);
+    }
     const { error: e2 } = await admin.from('pros').upsert({
-      id: invited.user.id, role, centre_id, display_name: display_name.trim(), specialty: specialty || null, languages: ['fr'], status: 'away',
+      id: created.user.id, role, centre_id, display_name: display_name.trim(), specialty: specialty || null, languages: ['fr'], status: 'away',
     });
-    if (e2) return json({ error: e2.message }, 400);
-    await log(`team.invite.${role}`, invited.user.id);
-    return json({ ok: true, id: invited.user.id });
+    if (e2) {
+      await admin.auth.admin.deleteUser(created.user.id);
+      return json({ error: e2.message }, 400);
+    }
+    await admin.rpc('mark_temp_password', { p_user_id: created.user.id });
+    await log(`user.create.${role}`, created.user.id);
+    return json({ ok: true, id: created.user.id });
   }
 
   if (!isSuper) return json({ error: 'réservé au super admin' }, 403);
@@ -102,6 +113,17 @@ Deno.serve(async (req) => {
     const { error } = await admin.from('pros').update(patch).eq('id', id);
     if (error) return json({ error: error.message }, 400);
     await log('user.update', id);
+    return json({ ok: true });
+  }
+
+  // ---------- Nouveau mot de passe provisoire (mot de passe oublié) ----------
+  if (action === 'reset_password') {
+    if (id === caller.user.id) return json({ error: 'change ton propre mot de passe depuis ton profil' }, 400);
+    if (typeof body.password !== 'string' || body.password.length < 8) return json({ error: 'mot de passe provisoire : 8 caractères minimum' }, 400);
+    const { error } = await admin.auth.admin.updateUserById(id, { password: body.password });
+    if (error) return json({ error: error.message }, 400);
+    await admin.rpc('mark_temp_password', { p_user_id: id });
+    await log('user.reset_password', id);
     return json({ ok: true });
   }
 

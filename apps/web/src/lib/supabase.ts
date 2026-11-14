@@ -33,6 +33,8 @@ export type Pro = {
   specialty: string | null;
   languages: Lang[];
   status: ProStatus;
+  /** Mot de passe provisoire donné par le super admin : à changer avant tout accès. */
+  must_change_password?: boolean;
   centre?: { name: string } | null;
 };
 

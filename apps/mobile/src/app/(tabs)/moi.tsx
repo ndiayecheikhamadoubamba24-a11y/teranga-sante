@@ -4,7 +4,6 @@ import { Image, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 're
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avatar } from '../../components/Avatar';
 import { BADGES, BadgeShield } from '../../components/Badge';
-import { Village } from '../../components/Illustrations';
 import { ProgressBar } from '../../components/ui';
 import { BACKGROUNDS, DEFAULT_BACKGROUND } from '../../lib/backgrounds';
 import { levelOf, useStore } from '../../lib/store';
@@ -61,7 +60,6 @@ export default function Moi() {
             <Text style={styles.rankTitle}>Classement par quartier</Text>
             <Text style={styles.rankValue}>bientôt</Text>
           </View>
-          <Village height={90} />
         </View>
 
         {bookings.length > 0 && (

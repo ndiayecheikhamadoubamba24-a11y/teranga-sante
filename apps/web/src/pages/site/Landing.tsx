@@ -5,7 +5,6 @@ import QRCode from 'qrcode';
 import { type ReactNode, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Baobi } from '../../components/Baobi';
-import { Village } from '../../components/Decor';
 import { Logo } from '../../components/ui';
 import { ANDROID_URL, APP_ONLINE, IOS_URL, IS_APK, loadArticles, type SiteArticle } from '../../lib/site';
 import { ArticleCard } from './Articles';
@@ -16,7 +15,6 @@ function PhoneMock() {
     <div className="phone" aria-hidden="true">
       <div className="phone-screen">
         <div style={{ marginTop: 6 }}><Logo size={64} /></div>
-        <div className="phone-village"><Village height={70} /></div>
         <div className="phone-tiles">
           <div style={{ background: 'var(--blue)' }}><Stethoscope size={22} /><span>Je me fais dépister</span></div>
           <div style={{ background: 'var(--orange)' }}><Gamepad2 size={22} /><span>Je joue et j’apprends</span></div>

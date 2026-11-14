@@ -1,7 +1,6 @@
 import { AlertTriangle, ArrowRight, BarChart3, CalendarDays, MessageCircle } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { VillageStrip } from '../components/Decor';
 import { Empty, StatusSelect, Youth, useToast } from '../components/ui';
 import { useAuth, usePro } from '../lib/auth';
 import { fmtTime, isoDate, SERVICE_LABEL, timeAgo } from '../lib/format';
@@ -132,12 +131,10 @@ export default function NurseDashboard() {
         </section>
       </div>
 
-      <div className="card" style={{ padding: 0, overflow: 'hidden', position: 'relative' }}>
-        <VillageStrip height={110} />
-        <div className="row" style={{ position: 'absolute', left: 18, top: 14, background: 'var(--white)', borderRadius: 999, padding: '6px 6px 6px 14px', boxShadow: 'var(--shadow)' }}>
-          <strong className="small">Mon statut :</strong>
-          <StatusSelect value={pro.status} onChange={setStatus} />
-        </div>
+      <div className="card row">
+        <strong>Mon statut :</strong>
+        <StatusSelect value={pro.status} onChange={setStatus} />
+        <span className="small muted">Les jeunes voient ce statut sur ton profil dans l’application.</span>
       </div>
     </div>
   );

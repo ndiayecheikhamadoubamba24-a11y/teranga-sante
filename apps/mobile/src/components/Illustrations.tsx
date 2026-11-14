@@ -18,61 +18,6 @@ export function WaxBand({ height = 26 }: { height?: number }) {
   );
 }
 
-function Baobab({ x, y, s = 1 }: { x: number; y: number; s?: number }) {
-  return (
-    <G transform={`translate(${x} ${y}) scale(${s})`}>
-      <Path d="M-5 0 L-7 -34 L-16 -46 M-7 -34 L0 -50 M-6 -34 L8 -46" stroke="#7A4A2A" strokeWidth={4} fill="none" strokeLinecap="round" />
-      <Path d="M-8 0 Q-6 -20 -5 -34 L5 -34 Q6 -20 8 0 Z" fill="#7A4A2A" />
-      <Circle cx={-18} cy={-50} r={12} fill="#2F8F3A" />
-      <Circle cx={0} cy={-56} r={14} fill="#3C9E3F" />
-      <Circle cx={16} cy={-50} r={12} fill="#2F8F3A" />
-    </G>
-  );
-}
-
-function House({ x, y, w, h, wall, roof }: { x: number; y: number; w: number; h: number; wall: string; roof: string }) {
-  return (
-    <G>
-      <Rect x={x} y={y} width={w} height={h} fill={wall} />
-      <Polygon points={`${x - 4},${y} ${x + w / 2},${y - h * 0.45} ${x + w + 4},${y}`} fill={roof} />
-      <Rect x={x + w * 0.15} y={y + h * 0.25} width={w * 0.2} height={h * 0.25} fill={colors.blue} />
-      <Rect x={x + w * 0.65} y={y + h * 0.25} width={w * 0.2} height={h * 0.25} fill={colors.blue} />
-      <Rect x={x + w * 0.4} y={y + h * 0.5} width={w * 0.2} height={h * 0.5} fill="#7A4A2A" />
-    </G>
-  );
-}
-
-// Quartier illustré (écran principal, profil).
-export function Village({ height = 160 }: { height?: number }) {
-  return (
-    <Svg width="100%" height={height} viewBox="0 0 360 160" preserveAspectRatio="xMidYMax slice">
-      <Defs>
-        <LinearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-          <Stop offset="0" stopColor="#8FD0F2" />
-          <Stop offset="1" stopColor="#FFF1CC" />
-        </LinearGradient>
-      </Defs>
-      <Rect width={360} height={160} fill="url(#sky)" />
-      <Circle cx={300} cy={34} r={16} fill={colors.sun} />
-      <Path d="M0 120 Q90 100 180 116 T360 110 L360 160 L0 160 Z" fill="#9CCB5B" />
-      <Baobab x={30} y={124} s={1.2} />
-      <Baobab x={330} y={120} s={1.1} />
-      <House x={70} y={86} w={60} h={40} wall="#E9A15A" roof="#C65A2E" />
-      <House x={150} y={80} w={70} h={46} wall="#F2C46B" roof="#B5532A" />
-      {/* Étal de marché */}
-      <G>
-        <Rect x={238} y={98} width={56} height={28} fill="#F6E1B5" />
-        <Path d="M232 98 L300 98 L294 84 L238 84 Z" fill={colors.red} />
-        <Path d="M245 84 L245 98 M259 84 L259 98 M273 84 L273 98 M287 84 L287 98" stroke={colors.white} strokeWidth={5} />
-        <Circle cx={252} cy={110} r={5} fill={colors.orange} />
-        <Circle cx={266} cy={112} r={5} fill={colors.green} />
-        <Circle cx={280} cy={110} r={5} fill={colors.sun} />
-      </G>
-      <Path d="M0 140 Q180 128 360 140 L360 160 L0 160 Z" fill="#E7C27D" />
-    </Svg>
-  );
-}
-
 // Plante qui grandit selon la régularité (0 à 5).
 export function Plant({ stage, height = 150 }: { stage: number; height?: number }) {
   const s = Math.max(0, Math.min(5, stage));

@@ -3,7 +3,7 @@ import { Redirect, router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Baobi } from '../../components/Baobi';
-import { LogoInline, Village } from '../../components/Illustrations';
+import { LogoInline } from '../../components/Illustrations';
 import { tap } from '../../components/ui';
 import { useStore } from '../../lib/store';
 import { colors, fonts, radius, shadow, spacing } from '../../theme';
@@ -46,7 +46,6 @@ export default function Accueil() {
           <Ionicons name="notifications-outline" size={26} color={colors.night} />
         </Pressable>
       </View>
-      <Village height={170} />
 
       <View style={styles.body}>
         <View style={styles.row}>

@@ -11,9 +11,10 @@ insert into public.centres (id, name, region_id, district, address, lat, lng, is
   ('11111111-0000-0000-0000-000000000004','Centre Ado Ziguinchor',14,'Ziguinchor','Quartier Boucotte',12.5681,-16.2719,true,true,'{"mon-fri":["08:30","16:30"]}','{screening,prep}')
 on conflict do nothing;
 
-insert into public.stocks (centre_id, item, level, threshold) values
-  ('11111111-0000-0000-0000-000000000001','selftest',42,10),('11111111-0000-0000-0000-000000000001','condom',300,50),
-  ('11111111-0000-0000-0000-000000000001','arv',18,20),('11111111-0000-0000-0000-000000000001','prep',25,10)
+-- (la colonne capacity est ajoutée par la migration admin)
+insert into public.stocks (centre_id, item, level, threshold, capacity) values
+  ('11111111-0000-0000-0000-000000000001','selftest',85,15,100),('11111111-0000-0000-0000-000000000001','condom',300,100,500),
+  ('11111111-0000-0000-0000-000000000001','arv',18,20,40),('11111111-0000-0000-0000-000000000001','prep',90,10,100)
 on conflict do nothing;
 
 -- Créneaux des 7 prochains jours (Médina et Pikine), 9h–16h, toutes les heures.

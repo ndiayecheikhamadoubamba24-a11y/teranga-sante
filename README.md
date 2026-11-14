@@ -10,9 +10,18 @@ Application ludique et confidentielle (VIH, jeunes 18–35 ans, Sénégal).
 
 ## 1. Base Supabase (une seule fois)
 
-1. Dashboard Supabase → **SQL Editor** → coller et exécuter `supabase/migrations/20261114000000_init.sql`, puis `supabase/seed.sql` (données fictives).
+1. Dashboard Supabase → **SQL Editor** → exécuter dans l'ordre :
+   `supabase/migrations/20261114000000_init.sql`, `supabase/migrations/20261115000000_admin.sql`, puis `supabase/seed.sql` (données fictives).
 2. **Authentication → Sign In / Providers** → activer **Allow anonymous sign-ins** (usagers sans compte, pseudo uniquement).
-3. **Authentication → Users → Add user** pour chaque infirmière / admin, puis insérer sa ligne dans `public.pros` (exemple en bas de `seed.sql`).
+3. **Authentication → Multi-Factor** : vérifier que **TOTP** est activé (validation en 2 étapes des professionnels).
+4. Comptes et données de démo (6 mois de rendez-vous, 14 régions, conversations, signalements) — en local, avec la clé secrète :
+   ```bash
+   cd apps/web && npm install
+   SUPABASE_SERVICE_ROLE_KEY=... DEMO_PASSWORD='un-mot-de-passe-solide' node scripts/seed-demo.mjs
+   ```
+   Comptes créés : `infirmiere@teranga.demo`, `responsable@teranga.demo`, `cnls@teranga.demo` (+ 2 infirmières).
+5. (Optionnel) Invitation d'infirmières depuis l'écran « Stocks et équipe » :
+   `supabase functions deploy invite-member`
 
 ## 2. Mobile
 
@@ -53,8 +62,30 @@ npm install
 npm run dev            # http://localhost:5173
 ```
 
+### Écrans d'administration intégrés (maquette 2)
+
+| # | Écran | Route | Rôle |
+|---|---|---|---|
+| A1 | Connexion + validation en 2 étapes (TOTP, enrôlement à la 1re connexion) | `/connexion` | tous |
+| A2 | Tableau de bord infirmière (Rdv du jour, non lus, urgences, présence, statut) | `/tableau-de-bord` | infirmière |
+| A3 | Agenda semaine/jour : créer, bloquer, glisser-déposer, surbrillance temps réel | `/agenda` | infirmière, responsable |
+| A4 | Rendez-vous : recherche par code, filtres, confirmer/reporter/venu/absent, export CSV | `/rendez-vous` | infirmière, responsable |
+| A5 | Messagerie : priorités, réponses rapides, proposer un RDV, orienter, clôturer | `/messagerie` | infirmière |
+| A6 | Bibliothèque : fiches, Vrai/Faux, chatbot, FR/WO/FF, aperçu mobile, brouillon/publié | `/contenus` | infirmière, CNLS |
+| A7 | Tableau de bord centre : KPI, fréquentation, charge par infirmière, alertes | `/centre` | responsable |
+| A8 | Stocks (jauges, seuils, alerte auto) et équipe (statuts, invitation) | `/stocks` | responsable |
+| A9 | National : carte des 14 régions, filtres période/région/âge, seuil d'effectif 5, export Excel/PDF | `/national` | CNLS |
+| A10 | Signalements et alertes : carte, assigner, répondre, clôturer | `/signalements` | CNLS |
+
+- Toutes les actions sensibles sont inscrites dans `activity_log` (« Accès sécurisé et traçable »).
+- Boucle de démo : réservation mobile → toast + surbrillance dans l'agenda (A3) → région qui s'illumine sur la carte nationale (A9).
+- `VITE_MFA_OPTIONAL=true` dans `apps/web/.env` rend la 2e étape facultative **pour une démo uniquement**.
+- Contours des régions : `apps/web/src/data/senegal.ts`, extraits de `@react-map/senegal` (licence MIT).
+
 ## Modèle de données (résumé)
 
+- Admin : `articles`, `alerts` (ruptures, alerte auto sous le seuil), `booking_events` (région + date seulement, pour la carte en direct), `chatbot_hits` (sujet seulement, jamais le texte).
+- RPC admin : `centre_stats()`, `national_overview()`, `reschedule_booking()`, `conversation_has_booking()`.
 - `players` : usager anonyme (pseudo, avatar, langue, points) — **aucun nom ni numéro**.
 - `pros` : infirmières / responsables / admin national (rôle, centre, statut en ligne).
 - `centres`, `regions`, `slots`, `bookings` (code `BAO-XXXX`), `conversations`, `messages`,

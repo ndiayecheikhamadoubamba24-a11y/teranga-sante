@@ -44,8 +44,16 @@ export default function Chatbot() {
       });
   }, [settings.lang]);
 
+  // Statistique anonyme pour le CNLS : seul le sujet est enregistré, jamais le texte de la question.
+  const track = (node_id: string, routed_to: string | null = null) => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) supabase.from('chatbot_hits').insert({ node_id, routed_to }).then(() => {});
+    });
+  };
+
   const goTo = (id: string, userText: string) => {
     const node = nodes[id] ?? nodes.fallback;
+    track(node.id);
     setLines((l) => [...l, { from: 'me', text: userText }, { from: 'bot', text: node.message }]);
     setCurrent(node);
     setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 50);
@@ -54,6 +62,7 @@ export default function Chatbot() {
   const choose = (o: ChatOption) => {
     tap();
     if (o.route) {
+      track(current.id, o.route);
       router.push(o.route as never);
       return;
     }

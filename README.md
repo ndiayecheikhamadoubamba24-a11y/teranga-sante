@@ -8,6 +8,8 @@ Application ludique et confidentielle (VIH, jeunes 18–35 ans, Sénégal).
 | `apps/web` | Interface d'administration (A1–A10) | React · Vite · React Router |
 | `supabase` | Base, RLS, fonctions, temps réel | Supabase (Postgres) |
 
+📘 **Guide d'utilisation de l'application mobile (PDF, 14 pages)** : [`docs/Teranga-Sante-Guide-application-mobile.pdf`](docs/Teranga-Sante-Guide-application-mobile.pdf)
+
 ## 1. Base Supabase (une seule fois)
 
 1. Dashboard Supabase → **SQL Editor** → exécuter dans l'ordre :

@@ -30,7 +30,8 @@ function Skyline() {
   );
 }
 
-// Écran 10 — Mode discret (M13) : faux écran météo. Appui long sur la température pour revenir.
+// Écran 10 — Mode discret (M13) : faux écran météo. Doigt posé 3 secondes sur la température pour revenir.
+const EXIT_HOLD_MS = 3000;
 export default function Discret() {
   const [unit, setUnit] = useState<'C' | 'F'>('C');
   const leave = () => (router.canGoBack() ? router.back() : router.replace('/accueil'));
@@ -51,7 +52,7 @@ export default function Discret() {
           <View style={styles.sun}>
             <Ionicons name="partly-sunny" size={110} color={colors.sun} />
           </View>
-          <Pressable onLongPress={leave} delayLongPress={800} accessibilityLabel="Température">
+          <Pressable onLongPress={leave} delayLongPress={EXIT_HOLD_MS} accessibilityLabel="Température">
             <Text style={styles.temp}>{unit === 'C' ? '28°C' : '82°F'}</Text>
             <Text style={styles.cond}>Ciel dégagé</Text>
             <Text style={styles.city}>Dakar</Text>

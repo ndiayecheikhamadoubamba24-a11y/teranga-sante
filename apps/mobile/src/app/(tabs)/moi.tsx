@@ -103,7 +103,7 @@ export default function Moi() {
             <Ionicons name="phone-portrait-outline" size={22} color={colors.night} />
             <View style={{ flex: 1 }}>
               <Text style={styles.bookingText}>Secouer pour masquer</Text>
-              <Text style={styles.bookingSub}>Affiche un faux écran météo. Appui long sur la température pour revenir.</Text>
+              <Text style={styles.bookingSub}>Affiche un faux écran météo. Pour revenir, garde le doigt 3 secondes sur la température.</Text>
             </View>
             <Switch value={settings.shakeToHide} onValueChange={setShakeToHide} trackColor={{ true: colors.green }} />
           </View>

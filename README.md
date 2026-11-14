@@ -117,7 +117,7 @@ npx expo start         # scanner le QR avec Expo Go
 - Hors ligne : quiz, chatbot et centres ont un contenu de secours (`src/data/content.ts`) si Supabase ne répond pas en 4 s.
 - Le suivi de traitement reste **uniquement sur le téléphone** (AsyncStorage).
 - Discussion (M7) : messages vocaux AAC mono 32 kb/s (≤ 60 s) dans le bucket privé `voice`, lisibles uniquement par les participants ; bouton Urgence = conversation prioritaire chez l'infirmière + appel SAMU (1515) ; après un échange, l'app propose de réserver, et après une réservation, d'écrire à l'infirmière.
-- Mode discret : secouer le téléphone → faux écran météo ; appui long sur la température pour revenir.
+- Mode discret : secouer le téléphone → faux écran météo ; garder le doigt **3 secondes** sur la température pour revenir.
 - Wolof et pulaar : structure prête dans `src/lib/i18n.ts`, traductions à fournir par des locuteurs natifs.
 
 ## 3. Web — site vitrine + espace professionnel

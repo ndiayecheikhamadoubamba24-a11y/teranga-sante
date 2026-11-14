@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Empty } from '../components/ui';
 import { usePro } from '../lib/auth';
+import { useCentre, useCentreId } from '../lib/centre';
 import { isoDate } from '../lib/format';
 import { supabase } from '../lib/supabase';
 import { useRealtime } from '../lib/useRealtime';
@@ -44,7 +45,9 @@ export function ChartTip({ active, payload, label, unit }: { active?: boolean; p
 
 // A7 — Tableau de bord du responsable de centre.
 export default function CentreDashboard() {
-  const pro = usePro();
+  usePro();
+  const centreId = useCentreId();
+  const { centreName } = useCentre();
   const [period, setPeriod] = useState<Period>('month');
   const [stats, setStats] = useState<Stats | null>(null);
   const [alerts, setAlerts] = useState<Alert[]>([]);
@@ -52,15 +55,15 @@ export default function CentreDashboard() {
   const load = useCallback(async () => {
     const [from, to] = range(period);
     const [s, a] = await Promise.all([
-      supabase.rpc('centre_stats', { p_from: isoDate(from), p_to: isoDate(to) }),
-      supabase.from('alerts').select('*').eq('centre_id', pro.centre_id!).in('status', ['new', 'assigned']).order('created_at', { ascending: false }).limit(3),
+      supabase.rpc('centre_stats', { p_from: isoDate(from), p_to: isoDate(to), p_centre_id: centreId }),
+      supabase.from('alerts').select('*').eq('centre_id', centreId).in('status', ['new', 'assigned']).order('created_at', { ascending: false }).limit(3),
     ]);
     setStats(s.data as Stats);
     setAlerts((a.data as Alert[]) ?? []);
-  }, [period, pro.centre_id]);
+  }, [period, centreId]);
   useEffect(() => { load(); }, [load]);
-  useRealtime('bookings', load, `centre_id=eq.${pro.centre_id}`);
-  useRealtime('alerts', load, `centre_id=eq.${pro.centre_id}`);
+  useRealtime('bookings', load, `centre_id=eq.${centreId}`);
+  useRealtime('alerts', load, `centre_id=eq.${centreId}`);
 
   const freq = useMemo(() => (stats?.by_weekday ?? []).map((d) => ({ day: DOW[d.dow - 1], count: d.count })), [stats]);
   const load_ = stats?.by_nurse ?? [];
@@ -68,7 +71,7 @@ export default function CentreDashboard() {
   return (
     <div className="page">
       <div className="page-head">
-        <h1>{pro.centre?.name ?? 'Mon centre'}</h1>
+        <h1>{centreName}</h1>
         <select className="select" style={{ width: 'auto' }} value={period} onChange={(e) => setPeriod(e.target.value as Period)} aria-label="Période">
           {(Object.keys(PERIODS) as Period[]).map((p) => <option key={p} value={p}>{PERIODS[p]}</option>)}
         </select>

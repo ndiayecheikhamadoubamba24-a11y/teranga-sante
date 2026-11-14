@@ -2,6 +2,7 @@ import { AlertCircle, AlertTriangle, CheckCircle2, Minus, Plus, TriangleAlert, U
 import { useCallback, useEffect, useState } from 'react';
 import { Modal, StatusPill, initials, useToast } from '../components/ui';
 import { usePro } from '../lib/auth';
+import { useCentreId } from '../lib/centre';
 import { logAction, supabase, type Pro } from '../lib/supabase';
 import { useRealtime } from '../lib/useRealtime';
 
@@ -21,6 +22,7 @@ function stockStatus(s: Stock) {
 // A8 — Stocks et équipe (responsable de centre).
 export default function StocksTeam() {
   const pro = usePro();
+  const centreId = useCentreId();
   const toast = useToast();
   const [tab, setTab] = useState<'stocks' | 'team'>('stocks');
   const [stocks, setStocks] = useState<Stock[]>([]);
@@ -30,14 +32,14 @@ export default function StocksTeam() {
 
   const load = useCallback(async () => {
     const [s, t] = await Promise.all([
-      supabase.from('stocks').select('*').eq('centre_id', pro.centre_id!),
-      supabase.from('pros').select('*').eq('centre_id', pro.centre_id!).order('display_name'),
+      supabase.from('stocks').select('*').eq('centre_id', centreId),
+      supabase.from('pros').select('*').eq('centre_id', centreId).order('display_name'),
     ]);
     setStocks(((s.data as Stock[]) ?? []).sort((a, b) => ORDER.indexOf(a.item) - ORDER.indexOf(b.item)));
     setTeam((t.data as Pro[]) ?? []);
-  }, [pro.centre_id]);
+  }, [centreId]);
   useEffect(() => { load(); }, [load]);
-  useRealtime('pros', load, `centre_id=eq.${pro.centre_id}`);
+  useRealtime('pros', load, `centre_id=eq.${centreId}`);
 
   async function adjust(s: Stock, level: number) {
     const v = Math.max(0, Math.min(s.capacity * 2, level));
@@ -112,7 +114,7 @@ export default function StocksTeam() {
         {tab === 'stocks' ? stockCard : teamCard}
         {tab === 'stocks' ? teamCard : stockCard}
       </div>
-      {rupture && <RuptureModal centreId={pro.centre_id!} proId={pro.id} onClose={() => setRupture(false)} />}
+      {rupture && <RuptureModal centreId={centreId} proId={pro.id} onClose={() => setRupture(false)} />}
       {invite && <InviteModal onClose={() => setInvite(false)} onDone={() => { setInvite(false); load(); }} />}
     </div>
   );
@@ -150,8 +152,8 @@ function InviteModal({ onClose, onDone }: { onClose: () => void; onDone: () => v
   const [busy, setBusy] = useState(false);
   const send = async () => {
     setBusy(true);
-    // Fonction Edge (clé service côté serveur uniquement) : supabase/functions/invite-member
-    const { error } = await supabase.functions.invoke('invite-member', { body: { email, display_name: name, specialty } });
+    // Fonction Edge (clé service côté serveur uniquement) : supabase/functions/manage-users
+    const { error } = await supabase.functions.invoke('manage-users', { body: { action: 'invite', email, display_name: name, specialty } });
     setBusy(false);
     if (error) return toast(`Invitation impossible : ${error.message}`);
     toast(`Invitation envoyée à ${email}`);

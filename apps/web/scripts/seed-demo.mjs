@@ -54,6 +54,7 @@ const PROS = [
   ['infirmiere3@teranga.demo', { role: 'nurse', centre_id: C1, display_name: 'Mariama Diallo', specialty: 'Consultation', languages: ['fr', 'ff'], status: 'away' }],
   ['responsable@teranga.demo', { role: 'manager', centre_id: C1, display_name: 'Moussa Sow', specialty: null, languages: ['fr', 'wo'], status: 'online' }],
   ['cnls@teranga.demo', { role: 'national_admin', centre_id: null, display_name: 'Coumba Ba', specialty: null, languages: ['fr'], status: 'online' }],
+  ['superadmin@teranga.demo', { role: 'super_admin', centre_id: null, display_name: 'Super Admin', specialty: null, languages: ['fr'], status: 'online' }],
 ];
 const proIds = {};
 for (const [email, p] of PROS) {

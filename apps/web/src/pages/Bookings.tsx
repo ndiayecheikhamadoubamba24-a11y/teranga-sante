@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Drawer, Empty, useToast } from '../components/ui';
 import { usePro } from '../lib/auth';
+import { useCentreId } from '../lib/centre';
 import { downloadCsv, fmtDate, fmtTime, SERVICE_LABEL, STATUS_LABEL } from '../lib/format';
 import { logAction, supabase, type Booking, type BookingStatus, type Service } from '../lib/supabase';
 import { useRealtime } from '../lib/useRealtime';
@@ -12,7 +13,8 @@ const PAGE = 10;
 
 // A4 — Gestion des rendez-vous : tableau filtrable, recherche par code anonyme, actions.
 export default function Bookings() {
-  const pro = usePro();
+  usePro();
+  const centreId = useCentreId();
   const [params] = useSearchParams();
   const [rows, setRows] = useState<Booking[]>([]);
   const [q, setQ] = useState('');
@@ -28,18 +30,18 @@ export default function Bookings() {
     const { data } = await supabase
       .from('bookings')
       .select('*, slot:slots(starts_at, ends_at)')
-      .eq('centre_id', pro.centre_id!)
+      .eq('centre_id', centreId)
       .order('created_at', { ascending: false })
       .limit(500);
     const list = ((data as Booking[]) ?? []).sort((a, b) => (a.slot!.starts_at < b.slot!.starts_at ? -1 : 1));
     setRows(list);
     setOpen((o) => (o ? list.find((x) => x.id === o.id) ?? null : null));
-  }, [pro.centre_id]);
+  }, [centreId]);
 
   useEffect(() => {
     load();
   }, [load]);
-  useRealtime('bookings', load, `centre_id=eq.${pro.centre_id}`);
+  useRealtime('bookings', load, `centre_id=eq.${centreId}`);
 
   const filtered = useMemo(() => rows.filter((b) => {
     const day = b.slot!.starts_at.slice(0, 10);

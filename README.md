@@ -11,7 +11,8 @@ Application ludique et confidentielle (VIH, jeunes 18–35 ans, Sénégal).
 ## 1. Base Supabase (une seule fois)
 
 1. Dashboard Supabase → **SQL Editor** → exécuter dans l'ordre :
-   `supabase/migrations/20261114000000_init.sql`, `20261115000000_admin.sql`, `20261116000000_chat.sql`, puis `supabase/seed.sql` (données fictives).
+   `supabase/migrations/20261114000000_init.sql`, `20261115000000_admin.sql`, `20261116000000_chat.sql`,
+   `20261117000000_super_admin_role.sql` **(seul, puis cliquer Run)**, `20261117000100_super_admin.sql`, puis `supabase/seed.sql` (données fictives).
 2. **Authentication → Sign In / Providers** → activer **Allow anonymous sign-ins** (usagers sans compte, pseudo uniquement).
 3. **Authentication → Multi-Factor** : vérifier que **TOTP** est activé (validation en 2 étapes des professionnels).
 4. Comptes et données de démo (6 mois de rendez-vous, 14 régions, conversations, signalements) — en local, avec la clé secrète :
@@ -19,9 +20,25 @@ Application ludique et confidentielle (VIH, jeunes 18–35 ans, Sénégal).
    cd apps/web && npm install
    SUPABASE_SERVICE_ROLE_KEY=... DEMO_PASSWORD='un-mot-de-passe-solide' node scripts/seed-demo.mjs
    ```
-   Comptes créés : `infirmiere@teranga.demo`, `responsable@teranga.demo`, `cnls@teranga.demo` (+ 2 infirmières).
-5. (Optionnel) Invitation d'infirmières depuis l'écran « Stocks et équipe » :
-   `supabase functions deploy invite-member`
+   Comptes créés : `superadmin@teranga.demo`, `infirmiere@teranga.demo`, `responsable@teranga.demo`, `cnls@teranga.demo` (+ 2 infirmières).
+5. Gestion des comptes depuis l'admin (inviter, changer de rôle, désactiver, réinitialiser la 2e étape) :
+   `supabase functions deploy manage-users`
+
+### Créer le premier super admin (sans le script de démo)
+
+1. Supabase → **Authentication → Users → Add user** (email + mot de passe, « Auto confirm »).
+2. SQL Editor (remplacer l'email) :
+   ```sql
+   insert into public.pros (id, role, display_name)
+   select id, 'super_admin', 'Super Admin' from auth.users where email = 'ton.email@exemple.sn'
+   on conflict (id) do update set role = 'super_admin', centre_id = null;
+   ```
+3. Se connecter sur l'admin web : il active la validation en 2 étapes, puis crée les centres et invite les autres comptes.
+
+**Super admin** — gère toute la plateforme : utilisateurs (`/admin/utilisateurs`), centres (`/admin/centres`),
+journal d'activité (`/admin/journal`), vue nationale, signalements, contenus, et agenda / rendez-vous / stocks / tableau
+de **n'importe quel centre** (sélecteur dans l'en-tête). Par confidentialité, il **ne voit pas** les conversations
+des jeunes ni leurs profils. Garde-fous : impossible de se retirer son propre rôle ou de supprimer le dernier super admin.
 
 ## 2. Mobile
 

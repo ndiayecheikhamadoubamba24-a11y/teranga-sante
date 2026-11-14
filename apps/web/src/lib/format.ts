@@ -29,6 +29,7 @@ export const ROLE_LABEL: Record<ProRole, string> = {
   nurse: 'Infirmière',
   manager: 'Responsable de centre',
   national_admin: 'Administration nationale',
+  super_admin: 'Super administrateur',
 };
 
 export const PRO_STATUS: Record<ProStatus, { label: string; tone: 'good' | 'warning' | 'muted' }> = {

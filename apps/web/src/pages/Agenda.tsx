@@ -2,6 +2,7 @@ import { Ban, ChevronLeft, ChevronRight, Plus, Trash2, Unlock } from 'lucide-rea
 import { type DragEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { Modal, useToast } from '../components/ui';
 import { usePro } from '../lib/auth';
+import { useCentreId } from '../lib/centre';
 import { addDays, fmtTime, isoDate, sameDay, SERVICE_FAMILY, SERVICE_LABEL, startOfWeek } from '../lib/format';
 import { logAction, supabase, type Pro, type Service, type Slot } from '../lib/supabase';
 import { useRealtime } from '../lib/useRealtime';
@@ -20,6 +21,7 @@ type SlotRow = Slot & { booked: number; codes: string[] };
 // A3 — Agenda et créneaux : semaine/jour, création, blocage, déplacement (glisser-déposer).
 export default function Agenda() {
   const pro = usePro();
+  const centreId = useCentreId();
   const toast = useToast();
   const [view, setView] = useState<'week' | 'day'>('week');
   const [anchor, setAnchor] = useState(() => new Date());
@@ -46,7 +48,7 @@ export default function Agenda() {
     const { data } = await supabase
       .from('slots')
       .select('*, bookings(code, status)')
-      .eq('centre_id', pro.centre_id!)
+      .eq('centre_id', centreId)
       .gte('starts_at', from.toISOString())
       .lt('starts_at', to.toISOString())
       .order('starts_at');
@@ -57,17 +59,17 @@ export default function Agenda() {
         return { ...s, booked: active.length, codes: active.map((b) => b.code) };
       }),
     );
-  }, [days, pro.centre_id]);
+  }, [days, centreId]);
 
   useEffect(() => {
     load();
   }, [load]);
 
   useEffect(() => {
-    supabase.from('pros').select('*').eq('centre_id', pro.centre_id!).eq('role', 'nurse').then(({ data }) => setNurses((data as Pro[]) ?? []));
-  }, [pro.centre_id]);
+    supabase.from('pros').select('*').eq('centre_id', centreId).eq('role', 'nurse').then(({ data }) => setNurses((data as Pro[]) ?? []));
+  }, [centreId]);
 
-  useRealtime('slots', load, `centre_id=eq.${pro.centre_id}`);
+  useRealtime('slots', load, `centre_id=eq.${centreId}`);
   useRealtime('bookings', (c) => {
     if (c.eventType === 'INSERT') {
       setFlashId(String(c.new.slot_id));
@@ -75,7 +77,7 @@ export default function Agenda() {
       setTimeout(() => setFlashId(null), 4000);
     }
     load();
-  }, `centre_id=eq.${pro.centre_id}`);
+  }, `centre_id=eq.${centreId}`);
 
   const nurseName = (id: string | null) => nurses.find((n) => n.id === id)?.display_name;
 
@@ -212,7 +214,7 @@ export default function Agenda() {
       </div>
 
       {selected && <SlotModal slot={selected} nurses={nurses} onClose={() => setSelected(null)} onChanged={() => { setSelected(null); load(); }} />}
-      {creating && <CreateSlotModal centreId={pro.centre_id!} nurses={nurses} defaultNurse={pro.role === 'nurse' ? pro.id : null} initial={creating} onClose={() => setCreating(null)} onCreated={() => { setCreating(null); load(); }} />}
+      {creating && <CreateSlotModal centreId={centreId} nurses={nurses} defaultNurse={pro.role === 'nurse' ? pro.id : null} initial={creating} onClose={() => setCreating(null)} onCreated={() => { setCreating(null); load(); }} />}
     </div>
   );
 }

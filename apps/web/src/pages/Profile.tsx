@@ -36,7 +36,7 @@ export default function Profile() {
             <strong>{session?.user.email}</strong>
             <div className="small muted">{ROLE_LABEL[pro.role]}{pro.centre ? ` · ${pro.centre.name}` : ''}</div>
           </div>
-          {pro.role !== 'national_admin' && <StatusSelect value={pro.status} onChange={setStatus} />}
+          {(pro.role === 'nurse' || pro.role === 'manager') && <StatusSelect value={pro.status} onChange={setStatus} />}
         </div>
         <div className="field"><label htmlFor="pn">Nom affiché aux jeunes</label><input id="pn" className="input" value={name} onChange={(e) => setName(e.target.value)} /></div>
         {pro.role === 'nurse' && <div className="field"><label htmlFor="ps">Spécialité</label><input id="ps" className="input" value={specialty} onChange={(e) => setSpecialty(e.target.value)} /></div>}

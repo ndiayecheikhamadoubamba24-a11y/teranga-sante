@@ -18,7 +18,7 @@ export const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.m
   },
 });
 
-export type ProRole = 'nurse' | 'manager' | 'national_admin';
+export type ProRole = 'nurse' | 'manager' | 'national_admin' | 'super_admin';
 export type ProStatus = 'online' | 'busy' | 'away';
 export type Service = 'screening' | 'consultation' | 'prep' | 'selftest_pickup' | 'counselling';
 export type BookingStatus = 'pending' | 'confirmed' | 'attended' | 'no_show' | 'cancelled';

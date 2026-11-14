@@ -17,7 +17,7 @@ export default function Home() {
   return (
     <main style={{ display: 'grid', placeItems: 'center', minHeight: '100vh', textAlign: 'center' }}>
       <div>
-        <h1 style={{ color: 'var(--green)', fontWeight: 900, fontSize: 40, margin: 0 }}>Teranga Santé</h1>
+        <h1 style={{ color: 'var(--green)', fontWeight: 800, fontSize: 40, margin: 0 }}>Teranga Santé</h1>
         <p style={{ fontWeight: 700 }}>Administration · Accès sécurisé et traçable 🔒</p>
         <p style={{ color: 'var(--muted)' }}>{status}</p>
       </div>

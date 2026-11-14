@@ -25,19 +25,22 @@ from (values ('11111111-0000-0000-0000-000000000001'::uuid), ('11111111-0000-000
 where extract(isodow from d) < 7;
 
 insert into public.quiz_questions (statement, answer, explanation, topic, published) values
-  ('{"fr":"On peut attraper le VIH en partageant un repas."}', false, '{"fr":"Faux ! Le VIH ne se transmet ni par la nourriture, ni par les bisous, ni par les moustiques."}', 'transmission', true),
-  ('{"fr":"Le dépistage est gratuit et confidentiel dans les centres partenaires."}', true, '{"fr":"Vrai ! Personne ne connaîtra ton résultat sans ton accord."}', 'dépistage', true),
-  ('{"fr":"Une personne sous traitement avec une charge virale indétectable ne transmet pas le VIH."}', true, '{"fr":"Vrai ! Indétectable = intransmissible (I=I)."}', 'traitement', true),
-  ('{"fr":"La PrEP est un vaccin contre le VIH."}', false, '{"fr":"Faux. La PrEP est un médicament préventif à prendre régulièrement, ce n''est pas un vaccin."}', 'prep', true);
+  ('{"fr": "On peut se sentir bien sans se faire dépister."}', true, '{"fr": "Vrai ! On peut vivre avec le VIH pendant des années sans aucun signe. Seul un test permet de savoir."}', 'dépistage', true),
+  ('{"fr": "On peut attraper le VIH en partageant un repas."}', false, '{"fr": "Faux ! Le VIH ne se transmet ni par la nourriture, ni par les bisous, ni par les moustiques."}', 'transmission', true),
+  ('{"fr": "Le dépistage est confidentiel dans les centres partenaires."}', true, '{"fr": "Vrai ! Personne ne connaîtra ton résultat sans ton accord."}', 'dépistage', true),
+  ('{"fr": "Une personne sous traitement avec une charge virale indétectable ne transmet pas le VIH par voie sexuelle."}', true, '{"fr": "Vrai ! Indétectable = Intransmissible (I = I)."}', 'traitement', true),
+  ('{"fr": "La PrEP est un vaccin contre le VIH."}', false, '{"fr": "Faux. La PrEP est un médicament préventif à prendre comme prescrit, ce n''est pas un vaccin."}', 'prep', true),
+  ('{"fr": "Le préservatif protège du VIH et de la plupart des IST."}', true, '{"fr": "Vrai ! Bien utilisé à chaque rapport, il protège efficacement."}', 'prévention', true),
+  ('{"fr": "On peut savoir si quelqu''un a le VIH juste en le regardant."}', false, '{"fr": "Faux ! Le VIH ne se voit pas. Seul un test peut le dire."}', 'transmission', true);
 
 insert into public.chatbot_nodes (id, message, options) values
-  ('root', '{"fr":"Salut ! Pose ta question sans honte, je suis là 🌳"}',
-   '[{"label":{"fr":"C''est quoi la PrEP ?"},"next":"prep"},{"label":{"fr":"Faire un autotest"},"next":"autotest"},{"label":{"fr":"Trouver un centre"},"route":"/centres"},{"label":{"fr":"Parler à une infirmière"},"route":"/infirmieres"}]'),
-  ('prep', '{"fr":"La PrEP est un médicament qui protège du VIH avant une exposition. Une infirmière peut t''expliquer si c''est fait pour toi."}',
-   '[{"label":{"fr":"Parler à une infirmière"},"route":"/infirmieres"},{"label":{"fr":"Autre question"},"next":"root"}]'),
-  ('autotest', '{"fr":"Un autotest se fait chez toi en 15 minutes. Tu peux en récupérer un gratuitement dans un centre."}',
-   '[{"label":{"fr":"Trouver un centre"},"route":"/centres"},{"label":{"fr":"Autre question"},"next":"root"}]')
-on conflict do nothing;
+  ('root', '{"fr": "Tu as une question ? Je suis là pour toi, sans jugement ! 💚"}', '[{"label": {"fr": "Comment me protéger ?"}, "next": "proteger"}, {"label": {"fr": "Où me faire dépister ?"}, "next": "depister"}, {"label": {"fr": "Et si je suis positif ?"}, "next": "positif"}]'),
+  ('proteger', '{"fr": "Pour te protéger : le préservatif à chaque rapport, la PrEP si tu es plus exposé·e, et un dépistage régulier. Une infirmière peut t''aider à choisir."}', '[{"label": {"fr": "C''est quoi la PrEP ?"}, "next": "prep"}, {"label": {"fr": "Parler à une infirmière"}, "route": "/carte"}, {"label": {"fr": "Autre question"}, "next": "root"}]'),
+  ('prep', '{"fr": "La PrEP est un médicament qui protège du VIH avant une exposition. Elle se prend sur prescription, avec un suivi en centre."}', '[{"label": {"fr": "Trouver un centre"}, "route": "/carte"}, {"label": {"fr": "Autre question"}, "next": "root"}]'),
+  ('depister', '{"fr": "Tu peux te faire dépister dans un centre, de façon confidentielle. Réserve un créneau avec un code, sans donner ton nom."}', '[{"label": {"fr": "Voir les centres"}, "route": "/carte"}, {"label": {"fr": "Faire un autotest"}, "next": "autotest"}, {"label": {"fr": "Autre question"}, "next": "root"}]'),
+  ('autotest', '{"fr": "Un autotest se fait chez toi en quelques minutes. Tu peux en récupérer un dans un centre partenaire. Si le résultat est positif, il faut le confirmer en centre."}', '[{"label": {"fr": "Trouver un centre"}, "route": "/carte"}, {"label": {"fr": "Autre question"}, "next": "root"}]'),
+  ('positif', '{"fr": "Tu n''es pas seul·e. Un traitement efficace existe : bien suivi, il permet de vivre longtemps et en bonne santé. Une infirmière peut t''accompagner dès maintenant."}', '[{"label": {"fr": "Parler à une infirmière"}, "route": "/carte"}, {"label": {"fr": "Autre question"}, "next": "root"}]')
+on conflict (id) do update set message = excluded.message, options = excluded.options;
 
 -- Les comptes infirmières/admins se créent dans Auth (Dashboard > Authentication > Add user),
 -- puis : insert into public.pros (id, role, centre_id, display_name, specialty, languages, status)

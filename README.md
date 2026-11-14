@@ -23,6 +23,27 @@ npm install
 npx expo start         # scanner le QR avec Expo Go
 ```
 
+### Écrans mobiles intégrés (maquette 1)
+
+| # | Écran | Route | Module |
+|---|---|---|---|
+| 1 | Accueil / langue | `/` | M1 |
+| 2 | Profil sans compte | `/profil` | M1 |
+| 3 | Écran principal (3 parcours) | `/accueil` | M2 |
+| 4 | Jeu Vrai ou Faux (boutons + swipe) | `/jeu` | M3 |
+| 5 | Résultat (points, badge, série, partage) | `/resultat` | M3/M14 |
+| 6 | Carte des centres (Leaflet/OSM) | `/carte` | M4 |
+| – | Réservation anonyme (code BAO-XXXX) | `/reserver/[id]` | M5 |
+| 7 | Chatbot Question sans honte | `/chatbot` | M8 |
+| 8 | Rappel de traitement discret | `/traitement` | M10 |
+| 9 | Profil et progression | `/moi` | M14 |
+| 10 | Mode discret (faux écran météo, secouer) | `/discret` | M13 |
+
+- Hors ligne : quiz, chatbot et centres ont un contenu de secours (`src/data/content.ts`) si Supabase ne répond pas en 4 s.
+- Le suivi de traitement reste **uniquement sur le téléphone** (AsyncStorage).
+- Mode discret : secouer le téléphone → faux écran météo ; appui long sur la température pour revenir.
+- Wolof et pulaar : structure prête dans `src/lib/i18n.ts`, traductions à fournir par des locuteurs natifs.
+
 ## 3. Web (admin)
 
 ```bash

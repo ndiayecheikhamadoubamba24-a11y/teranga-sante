@@ -1,19 +1,21 @@
-@import '@fontsource/nunito/400.css';
-@import '@fontsource/nunito/700.css';
-@import '@fontsource/nunito/900.css';
+@import '@fontsource/poppins/400.css';
+@import '@fontsource/poppins/600.css';
+@import '@fontsource/poppins/700.css';
+@import '@fontsource/poppins/800.css';
 
 /* Charte partagée avec l'app mobile */
 :root {
-  --sun: #f5b700;
-  --green: #0f6b3e;
+  --sun: #f7b500;
+  --green: #1e7b3c;
   --orange: #f26b1d;
+  --blue: #1f5fbf;
   --night: #14213d;
   --cream: #fff8ec;
   --white: #ffffff;
   --muted: #6b7280;
   --danger: #c62828;
   --radius: 16px;
-  font-family: 'Nunito', system-ui, sans-serif;
+  font-family: 'Poppins', system-ui, sans-serif;
   color: var(--night);
   background: var(--cream);
 }

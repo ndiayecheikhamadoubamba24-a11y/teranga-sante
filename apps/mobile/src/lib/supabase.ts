@@ -22,6 +22,14 @@ if (Platform.OS !== 'web') {
   });
 }
 
+/** Réseau faible : on abandonne vite et on bascule sur les contenus hors ligne. */
+export function withTimeout<T>(p: PromiseLike<T>, ms = 4000): Promise<T> {
+  return Promise.race([
+    Promise.resolve(p),
+    new Promise<T>((_, reject) => setTimeout(() => reject(new Error('timeout')), ms)),
+  ]);
+}
+
 /**
  * Usager sans compte (M1) : session anonyme Supabase, aucun nom ni numéro.
  * Le pseudo et l'avatar sont stockés dans la table `players`.
@@ -29,7 +37,7 @@ if (Platform.OS !== 'web') {
 export async function ensureAnonymousSession() {
   const { data } = await supabase.auth.getSession();
   if (data.session) return data.session;
-  const { data: signed, error } = await supabase.auth.signInAnonymously();
+  const { data: signed, error } = await withTimeout(supabase.auth.signInAnonymously(), 8000);
   if (error) throw error;
   return signed.session;
 }

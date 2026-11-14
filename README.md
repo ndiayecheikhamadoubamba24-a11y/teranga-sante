@@ -66,6 +66,12 @@ npm install
 npx expo start         # scanner le QR avec Expo Go
 ```
 
+### Identité visuelle
+
+- Logo officiel : `apps/web/public/logo.png`, `apps/mobile/assets/logo.png` ; emblème seul : `logo-mark.png`.
+- **Baobi** (la mascotte) = le baobab du logo : composant `Baobi` (web et mobile), avec un petit rebond quand il se réjouit.
+- Couleurs du logo : vert `#076236`, orange `#E85A05`, jaune `#F8B400`, fond crème `#FFF8EC`.
+
 ### Écrans mobiles intégrés (maquette 1)
 
 | # | Écran | Route | Module |

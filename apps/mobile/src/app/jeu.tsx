@@ -111,8 +111,8 @@ export default function Jeu() {
 
 const styles = StyleSheet.create({
   body: { flex: 1, paddingHorizontal: spacing(5), paddingBottom: spacing(4), gap: spacing(4) },
-  hero: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center', marginBottom: -spacing(8) },
-  bubble: { marginBottom: spacing(20), maxWidth: 160 },
+  hero: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing(2) },
+  bubble: { maxWidth: 170 },
   card: { backgroundColor: colors.white, borderRadius: radius.lg, padding: spacing(6), minHeight: 170, justifyContent: 'center', ...shadow, gap: spacing(3) },
   statement: { fontFamily: fonts.bold, fontSize: 21, lineHeight: 28, color: colors.night, textAlign: 'center' },
   explain: { flexDirection: 'row', gap: spacing(2), padding: spacing(3), borderRadius: radius.md, alignItems: 'flex-start' },

@@ -229,15 +229,6 @@ function Editor({ item, onChange, onClose, onSaved }: { item: Item; onChange: (i
           </div>
           <I18nField label="Titre" value={item.v.title} onChange={(title) => set<'articles'>({ title })} />
           <I18nField label="Texte" value={item.v.body} onChange={(body) => set<'articles'>({ body })} multiline />
-          <div className="field"><label>Illustration</label>
-            <div className="row">
-              {Object.keys(MOODS).map((m) => (
-                <button key={m} type="button" onClick={() => set<'articles'>({ illustration: m })} style={{ border: item.v.illustration === m ? '3px solid var(--green)' : '3px solid transparent', borderRadius: 14, padding: 0, background: 'none' }} aria-label={m}>
-                  <Thumb mood={m} />
-                </button>
-              ))}
-            </div>
-          </div>
         </>
       )}
       {item.kind === 'quiz' && (

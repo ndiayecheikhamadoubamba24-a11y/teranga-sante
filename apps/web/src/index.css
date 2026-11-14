@@ -281,3 +281,8 @@ table.table { width: 100%; border-collapse: collapse; }
 }
 .table.compact th, .table.compact td { padding: 8px 8px; }
 .table.compact th { font-size: 12px; }
+
+/* Baobi (emblème du logo) se réjouit : petit rebond */
+@keyframes baobi-bounce { 0%, 100% { transform: translateY(0) scale(1); } 35% { transform: translateY(-8%) scale(1.06); } }
+.baobi-cheer { animation: baobi-bounce 0.7s ease-out 3; }
+@media (prefers-reduced-motion: reduce) { .baobi-cheer { animation: none; } }

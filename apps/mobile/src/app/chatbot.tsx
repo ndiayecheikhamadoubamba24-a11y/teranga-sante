@@ -142,8 +142,8 @@ export default function Chatbot() {
 
 const styles = StyleSheet.create({
   content: { padding: spacing(4), gap: spacing(3) },
-  hero: { flexDirection: 'row', alignItems: 'flex-end', gap: spacing(1) },
-  heroBubble: { flex: 1, marginBottom: spacing(16) },
+  hero: { flexDirection: 'row', alignItems: 'center', gap: spacing(2) },
+  heroBubble: { flex: 1 },
   me: { alignSelf: 'flex-end', backgroundColor: colors.green, borderRadius: radius.lg, borderBottomRightRadius: 6, paddingHorizontal: spacing(4), paddingVertical: spacing(2.5), maxWidth: '80%' },
   meText: { fontFamily: fonts.medium, fontSize: 15, color: colors.white },
   botRow: { flexDirection: 'row', alignItems: 'flex-end', gap: spacing(2), maxWidth: '88%' },

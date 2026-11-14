@@ -1,7 +1,6 @@
 import { LogIn, Menu, Phone, UserRound, X } from 'lucide-react';
 import { type ReactNode, useEffect, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
-import { Baobi } from '../../components/Baobi';
 import { WaxBand } from '../../components/Decor';
 import { HOME_BY_ROLE } from '../../components/Layout';
 import { LogoInline } from '../../components/ui';
@@ -74,7 +73,6 @@ export function SiteLayout({ children, title }: { children: ReactNode; title?: s
             <strong>Urgence</strong>
             <a href="tel:1515" className="row" style={{ gap: 6 }}><Phone size={16} /> SAMU : 1515</a>
             <span className="small" style={{ opacity: 0.8 }}>En cas de danger immédiat, appelle les secours.</span>
-            <div style={{ marginTop: 8 }}><Baobi size={54} mood="wave" /></div>
           </div>
         </div>
         <div className="site-wrap small" style={{ opacity: 0.7, padding: '12px 20px 24px' }}>

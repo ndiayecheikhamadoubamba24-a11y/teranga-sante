@@ -1,7 +1,6 @@
 import { ArrowLeft, KeyRound, Lock, ShieldCheck, User } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
-import { Baobi } from '../components/Baobi';
 import { Village, WaxBand } from '../components/Decor';
 import { HOME_BY_ROLE } from '../components/Layout';
 import { Logo } from '../components/ui';
@@ -76,11 +75,10 @@ export default function Login() {
       <Link to="/" className="link" style={{ width: 'min(920px, 100%)' }}><ArrowLeft size={14} /> Retour au site Teranga Santé</Link>
       <div className="card" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', padding: 0, overflow: 'hidden', width: 'min(920px, 100%)', minHeight: 540 }}>
         <div style={{ background: '#FFF1CC', display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 32, position: 'relative' }}>
-          <Logo size={170} />
+          <Logo size={200} />
           <p style={{ fontWeight: 600, textAlign: 'center', margin: '4px 24px 0' }}>Espace réservé aux<br />professionnels de santé</p>
           <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', position: 'relative', width: '100%', justifyContent: 'center' }}>
             <div style={{ position: 'absolute', inset: 'auto 0 0 0' }}><Village height={130} /></div>
-            <div style={{ position: 'relative', marginBottom: 6 }}><Baobi size={170} mood="thumb" /></div>
           </div>
           <div style={{ width: '100%', background: 'var(--sun)', textAlign: 'center', padding: '8px 0', fontWeight: 700, color: 'var(--green-dark)', fontStyle: 'italic' }}>
             Ensemble pour une jeunesse en bonne santé !

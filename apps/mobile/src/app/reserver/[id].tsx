@@ -7,7 +7,7 @@ import { Baobi } from '../../components/Baobi';
 import { Bubble, Button, Chip, Header, PrivacyNote, tap } from '../../components/ui';
 import { CENTRES, type Centre } from '../../data/content';
 import { loadCentres } from '../../lib/geo';
-import { useStore } from '../../lib/store';
+import { getSyncError, useStore } from '../../lib/store';
 import { supabase } from '../../lib/supabase';
 import { colors, fonts, radius, shadow, spacing } from '../../theme';
 
@@ -43,7 +43,7 @@ export default function Reserver() {
     setSlots(null);
     const ok = await syncNow();
     if (!ok) {
-      setError('Connexion impossible. Vérifie ton internet puis réessaie.');
+      setError(getSyncError());
       setSlots([]);
       return;
     }

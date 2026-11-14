@@ -42,10 +42,31 @@ const yesterday = () => new Date(Date.now() - 86400000).toISOString().slice(0, 1
 
 // Le profil est d'abord local (fonctionne hors ligne), puis synchronisé vers `players`
 // via une session anonyme Supabase. Aucune donnée de santé n'est envoyée.
+// Dernière erreur de connexion au serveur, traduite pour l'utilisateur (affichée par les écrans).
+let lastSyncError: string | null = null;
+export const getSyncError = () => lastSyncError ?? 'Connexion impossible. Vérifie ton internet puis réessaie.';
+
+export function explainError(raw: string): string {
+  if (/anonymous sign-?ins? (are )?disabled/i.test(raw)) {
+    return 'La connexion anonyme est désactivée sur le serveur. Administrateur : Supabase → Authentication → Sign In / Providers → activer « Allow anonymous sign-ins ».';
+  }
+  if (/relation .*does not exist|could not find the table|schema cache/i.test(raw)) {
+    return 'La base de données n’est pas prête : les scripts SQL (migrations) doivent être exécutés dans Supabase.';
+  }
+  if (/timeout|network request failed|fetch failed|failed to fetch/i.test(raw)) {
+    return 'Serveur injoignable. Vérifie ta connexion internet puis réessaie.';
+  }
+  if (/rate limit/i.test(raw)) return 'Trop de tentatives. Patiente une minute puis réessaie.';
+  return `Connexion impossible (${raw}).`;
+}
+
 async function syncPlayer(p: Player, lang: Lang): Promise<boolean> {
   try {
     const session = await ensureAnonymousSession();
-    if (!session) return false;
+    if (!session) {
+      lastSyncError = explainError('anonymous session unavailable');
+      return false;
+    }
     const { error } = await withTimeout(supabase.from('players').upsert({
       id: session.user.id,
       pseudo: p.pseudo,
@@ -56,9 +77,11 @@ async function syncPlayer(p: Player, lang: Lang): Promise<boolean> {
       last_played: p.lastPlayed,
       badges: p.badges,
     }), 8000);
+    lastSyncError = error ? explainError(error.message) : null;
     return !error;
-  } catch {
+  } catch (e) {
     // hors ligne ou connexion anonyme désactivée : on réessaiera à la prochaine action
+    lastSyncError = explainError((e as Error)?.message ?? String(e));
     return false;
   }
 }

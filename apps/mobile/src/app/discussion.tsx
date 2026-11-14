@@ -14,7 +14,7 @@ import {
   type Conversation, flagUrgent, loadMessages, loadNurses, loadOpenConversation, markRead, type Message, myUserId, type Nurse, sendText, sendVoice,
   startConversation, TOPICS,
 } from '../lib/chat';
-import { useStore } from '../lib/store';
+import { getSyncError, useStore } from '../lib/store';
 import { supabase } from '../lib/supabase';
 import { colors, fonts, radius, shadow, spacing } from '../theme';
 
@@ -49,7 +49,7 @@ export default function Discussion() {
       setNurses(n);
       setConv(c);
     } catch {
-      setError('Connexion impossible. Vérifie ton internet puis réessaie.');
+      setError(getSyncError());
       setConv(null);
     }
   }, [syncNow]);

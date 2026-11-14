@@ -7,7 +7,7 @@ import { Baobi } from '../../components/Baobi';
 import { LANG_NAME, NURSE_STATUS, NurseAvatar } from '../../components/NurseAvatar';
 import { Bubble, Button, Chip, Header, PrivacyNote, tap } from '../../components/ui';
 import { loadNurses, type Nurse } from '../../lib/chat';
-import { useStore } from '../../lib/store';
+import { getSyncError, useStore } from '../../lib/store';
 import { colors, fonts, radius, shadow, spacing } from '../../theme';
 
 type Filter = 'online' | 'fr' | 'wo' | 'ff';
@@ -17,19 +17,19 @@ export default function Infirmieres() {
   const { centre } = useLocalSearchParams<{ centre?: string }>();
   const { syncNow, settings } = useStore();
   const [nurses, setNurses] = useState<Nurse[] | null>(null);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [q, setQ] = useState('');
   const [filters, setFilters] = useState<Filter[]>([]);
   const [centreId, setCentreId] = useState<string | undefined>(centre);
 
   const load = useCallback(async () => {
-    setError(false);
+    setError(null);
     setNurses(null);
     try {
       if (!(await syncNow())) throw new Error('offline');
       setNurses(await loadNurses());
     } catch {
-      setError(true);
+      setError(getSyncError());
       setNurses([]);
     }
   }, [syncNow]);
@@ -88,7 +88,7 @@ export default function Infirmieres() {
           ListHeaderComponent={header}
           ListEmptyComponent={
             <View style={styles.empty}>
-              <Text style={styles.emptyText}>{error ? 'Connexion impossible. Vérifie ton internet.' : 'Aucune infirmière ne correspond à ta recherche.'}</Text>
+              <Text style={styles.emptyText}>{error ?? 'Aucune infirmière ne correspond à ta recherche.'}</Text>
               {error && <Button label="Réessayer" icon="refresh" small onPress={load} />}
             </View>
           }

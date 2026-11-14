@@ -58,7 +58,7 @@ export default function Splash() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.cream },
+  root: { flex: 1 },
   top: { alignItems: 'center', paddingTop: spacing(4) },
   tagline: { fontFamily: fonts.semibold, fontSize: 15, color: colors.night, textAlign: 'center', marginTop: spacing(2) },
   hero: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: spacing(6) },

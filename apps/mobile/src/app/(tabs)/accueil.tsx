@@ -69,7 +69,7 @@ export default function Accueil() {
 
 const styles = StyleSheet.create({
   top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing(4), paddingVertical: spacing(2) },
-  body: { flex: 1, padding: spacing(4), paddingBottom: spacing(24), gap: spacing(4), backgroundColor: colors.sunLight, justifyContent: 'center' },
+  body: { flex: 1, padding: spacing(4), paddingBottom: spacing(24), gap: spacing(4), justifyContent: 'center' },
   row: { flexDirection: 'row', gap: spacing(4), flex: 1, maxHeight: 230 },
   tile: { borderRadius: radius.lg, borderBottomWidth: 6, padding: spacing(4), ...shadow },
   tileHalf: { flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: 150 },

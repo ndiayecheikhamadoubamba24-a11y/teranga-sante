@@ -91,6 +91,8 @@ npx expo start         # scanner le QR avec Expo Go
 - Logo officiel : `apps/web/public/logo.png`, `apps/mobile/assets/logo.png` ; emblème seul : `logo-mark.png`.
 - **Baobi** (la mascotte) = le baobab du logo : composant `Baobi` (web et mobile), avec un petit rebond quand il se réjouit.
 - Couleurs du logo : vert `#076236`, orange `#E85A05`, jaune `#F8B400`, fond crème `#FFF8EC`.
+- Arrière-plans de l'app mobile : `apps/mobile/assets/backgrounds/` (Motifs par défaut, Savane, Baobab, Wax), posés derrière
+  tous les écrans par `AppBackground` ; chaque jeune choisit le sien dans « Moi → Fond d'écran ».
 
 ### Écrans mobiles intégrés (maquette 1)
 

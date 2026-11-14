@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import type { BackgroundId } from './backgrounds';
 import { translate, type I18nKey, type Lang } from './i18n';
 import { ensureAnonymousSession, supabase, withTimeout } from './supabase';
 
@@ -15,7 +16,7 @@ export type Player = {
   gamesPlayed: number;
 };
 
-type Settings = { lang: Lang; shakeToHide: boolean };
+type Settings = { lang: Lang; shakeToHide: boolean; background?: BackgroundId };
 
 export type LocalBooking = { id: string; code: string; centreName: string; startsAt: string; status: string };
 
@@ -26,6 +27,7 @@ type Store = {
   t: (k: I18nKey) => string;
   setLang: (l: Lang) => void;
   setShakeToHide: (v: boolean) => void;
+  setBackground: (b: BackgroundId) => void;
   createPlayer: (pseudo: string, avatar: AvatarConfig) => Promise<void>;
   recordGame: (pointsWon: number, correct: number, total: number) => Promise<{ streak: number; newBadges: string[] }>;
   /** Garantit la session anonyme + la ligne `players` (nécessaire pour réserver). */
@@ -143,6 +145,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       t: (k) => translate(settings.lang, k),
       setLang: (lang) => setSettings((s) => ({ ...s, lang })),
       setShakeToHide: (shakeToHide) => setSettings((s) => ({ ...s, shakeToHide })),
+      setBackground: (background) => setSettings((s) => ({ ...s, background })),
       createPlayer,
       recordGame,
       syncNow: () => (player ? syncPlayer(player, settings.lang) : Promise.resolve(false)),

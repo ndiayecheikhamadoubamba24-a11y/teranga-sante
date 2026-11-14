@@ -1,11 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avatar } from '../../components/Avatar';
 import { BADGES, BadgeShield } from '../../components/Badge';
 import { Village } from '../../components/Illustrations';
 import { ProgressBar } from '../../components/ui';
+import { BACKGROUNDS, DEFAULT_BACKGROUND } from '../../lib/backgrounds';
 import { levelOf, useStore } from '../../lib/store';
 import { colors, fonts, radius, shadow, spacing } from '../../theme';
 
@@ -13,7 +14,7 @@ const SHOWN_BADGES = ['curieux', 'actif', 'solidaire', 'mythbuster'];
 
 // Écran 9 — Profil et progression (M14) : niveau, badges, points, classement par quartier (sans noms).
 export default function Moi() {
-  const { player, bookings, settings, setShakeToHide } = useStore();
+  const { player, bookings, settings, setShakeToHide, setBackground } = useStore();
   if (!player) return null;
   const level = levelOf(player.points);
 
@@ -81,6 +82,24 @@ export default function Moi() {
         )}
 
         <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Fond d’écran</Text>
+          <View style={styles.bgRow}>
+            {BACKGROUNDS.map((b) => {
+              const active = (settings.background ?? DEFAULT_BACKGROUND) === b.id;
+              return (
+                <Pressable key={b.id} onPress={() => setBackground(b.id)} style={styles.bgItem} accessibilityRole="radio" accessibilityState={{ selected: active }} accessibilityLabel={`Fond ${b.label}`}>
+                  <View style={[styles.bgThumb, active && styles.bgActive]}>
+                    <Image source={b.thumb} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+                    {active && <View style={styles.bgCheck}><Ionicons name="checkmark" size={14} color={colors.white} /></View>}
+                  </View>
+                  <Text style={[styles.bgLabel, active && { color: colors.green }]}>{b.label}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+
+        <View style={styles.section}>
           <Text style={styles.sectionTitle}>Réglages</Text>
           <View style={styles.setting}>
             <Ionicons name="phone-portrait-outline" size={22} color={colors.night} />
@@ -141,4 +160,10 @@ const styles = StyleSheet.create({
   bookingText: { fontFamily: fonts.semibold, fontSize: 14, color: colors.night },
   bookingSub: { fontFamily: fonts.regular, fontSize: 12, color: colors.muted },
   setting: { flexDirection: 'row', alignItems: 'center', gap: spacing(3), paddingVertical: spacing(1) },
+  bgRow: { flexDirection: 'row', justifyContent: 'space-between' },
+  bgItem: { alignItems: 'center', gap: 4, width: '23%' },
+  bgThumb: { width: '100%', aspectRatio: 0.62, borderRadius: radius.md, overflow: 'hidden', borderWidth: 3, borderColor: 'transparent' },
+  bgActive: { borderColor: colors.green },
+  bgCheck: { position: 'absolute', top: 4, right: 4, width: 22, height: 22, borderRadius: 11, backgroundColor: colors.green, alignItems: 'center', justifyContent: 'center' },
+  bgLabel: { fontFamily: fonts.semibold, fontSize: 12, color: colors.night },
 });

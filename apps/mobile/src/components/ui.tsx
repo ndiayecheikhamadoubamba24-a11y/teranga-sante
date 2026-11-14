@@ -163,7 +163,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing(3), paddingVertical: spacing(1), borderRadius: radius.pill,
   },
   pointsText: { fontFamily: fonts.bold, fontSize: 15, color: colors.night },
-  privacy: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: spacing(2) },
+  privacy: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: spacing(1.5), paddingHorizontal: spacing(4),
+    alignSelf: 'center', marginVertical: spacing(1), borderRadius: radius.pill, backgroundColor: 'rgba(255,255,255,0.92)',
+  },
   privacyText: { fontFamily: fonts.semibold, fontSize: 14, color: colors.green },
   track: { backgroundColor: colors.creamDark, overflow: 'hidden', width: '100%' },
 });

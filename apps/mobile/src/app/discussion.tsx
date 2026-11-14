@@ -421,7 +421,7 @@ function Chat({ me, conv, setConv, msgs, setMsgs, nurses, hasBooking, saveBookin
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing(6), gap: spacing(3) },
   errorText: { fontFamily: fonts.semibold, fontSize: 15, color: colors.night, textAlign: 'center' },
-  header: { flexDirection: 'row', alignItems: 'center', gap: spacing(3), paddingHorizontal: spacing(4), paddingVertical: spacing(2), backgroundColor: colors.cream },
+  header: { flexDirection: 'row', alignItems: 'center', gap: spacing(3), paddingHorizontal: spacing(4), paddingVertical: spacing(2), backgroundColor: 'rgba(255,248,236,0.94)' },
   headerTitle: { fontFamily: fonts.bold, fontSize: 17, color: colors.night },
   headerSub: { fontFamily: fonts.regular, fontSize: 12, color: colors.muted },
   urgent: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: colors.red, borderRadius: radius.pill, paddingHorizontal: spacing(3), paddingVertical: spacing(2) },

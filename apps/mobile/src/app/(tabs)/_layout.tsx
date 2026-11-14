@@ -16,7 +16,7 @@ export default function TabsLayout() {
         tabBarInactiveTintColor: colors.night,
         tabBarLabelStyle: { fontFamily: fonts.semibold, fontSize: 12 },
         tabBarStyle: { backgroundColor: colors.white, borderTopColor: colors.border, height: 64, paddingTop: 6 },
-        sceneStyle: { backgroundColor: colors.cream },
+        sceneStyle: { backgroundColor: 'transparent' },
       }}
     >
       <Tabs.Screen name="accueil" options={{ title: t('home'), tabBarIcon: icon('home') }} />

@@ -104,7 +104,7 @@ export default function Resultat() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.cream },
+  root: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: spacing(4) },
   banner: {
     backgroundColor: colors.orange, paddingHorizontal: spacing(10), paddingVertical: spacing(2), borderRadius: 14, marginTop: -spacing(6),

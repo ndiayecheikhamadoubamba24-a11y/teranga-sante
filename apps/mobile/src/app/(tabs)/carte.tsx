@@ -123,7 +123,7 @@ export default function Carte() {
 }
 
 const styles = StyleSheet.create({
-  bar: { flexDirection: 'row', alignItems: 'center', gap: spacing(3), paddingHorizontal: spacing(4), paddingVertical: spacing(2), backgroundColor: colors.cream },
+  bar: { flexDirection: 'row', alignItems: 'center', gap: spacing(3), paddingHorizontal: spacing(4), paddingVertical: spacing(2), backgroundColor: 'rgba(255,248,236,0.94)' },
   chips: { flexDirection: 'row', gap: spacing(2), flex: 1 },
   search: { flex: 1, fontFamily: fonts.medium, fontSize: 15, backgroundColor: colors.white, borderRadius: radius.pill, paddingHorizontal: spacing(4), height: 40, color: colors.night },
   sheet: { backgroundColor: colors.white, borderTopLeftRadius: radius.lg, borderTopRightRadius: radius.lg, padding: spacing(4), marginTop: -spacing(5), ...shadow },

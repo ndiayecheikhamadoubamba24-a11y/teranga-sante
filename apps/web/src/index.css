@@ -6,12 +6,12 @@
 
 /* Charte partagée avec l'app mobile */
 :root {
-  --sun: #f7b500;
+  --sun: #f8b400;
   --sun-light: #ffe7a3;
-  --green: #1e7b3c;
-  --green-dark: #145c2c;
+  --green: #076236;
+  --green-dark: #04472a;
   --green-light: #e3f2e1;
-  --orange: #f26b1d;
+  --orange: #e85a05;
   --orange-light: #fde3d2;
   --blue: #1f5fbf;
   --blue-light: #dde9fa;
@@ -103,7 +103,7 @@ h1, h2, h3 { margin: 0; }
 .btn.light { background: var(--cream-dark); color: var(--ink); border-bottom-color: var(--border); }
 .btn.outline { background: var(--white); color: var(--green); border: 2px solid var(--green); }
 .btn.red { background: var(--red); border-bottom-color: #8e1c1c; }
-.btn.orange { background: var(--orange); border-bottom-color: #c2500e; }
+.btn.orange { background: var(--orange); border-bottom-color: #b84702; }
 .btn.blue { background: var(--blue); border-bottom-color: #164a97; }
 .icon-btn { background: none; border: 0; padding: 6px; border-radius: 10px; color: var(--ink); display: inline-grid; place-items: center; position: relative; }
 .icon-btn:hover { background: var(--cream-dark); }

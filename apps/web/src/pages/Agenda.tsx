@@ -11,8 +11,8 @@ const START_H = 8;
 const END_H = 19;
 const HOUR_PX = 56;
 const FAMILY_STYLE = {
-  green: { bg: '#CDEBC9', border: '#1E7B3C' },
-  orange: { bg: '#FBD9B8', border: '#D2540E' },
+  green: { bg: '#CDEBC9', border: '#076236' },
+  orange: { bg: '#FBD9B8', border: '#E85A05' },
   blue: { bg: '#CFE0F8', border: '#1F5FBF' },
 };
 

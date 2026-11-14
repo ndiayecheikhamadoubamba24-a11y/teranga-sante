@@ -109,7 +109,7 @@ export default function CentreDashboard() {
                   <XAxis dataKey="name" {...AXIS} />
                   <YAxis allowDecimals={false} {...AXIS} />
                   <Tooltip content={<ChartTip unit="rendez-vous" />} cursor={{ fill: 'rgba(30,123,60,0.06)' }} />
-                  <Bar dataKey="count" fill="#1E7B3C" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="count" fill="#076236" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>

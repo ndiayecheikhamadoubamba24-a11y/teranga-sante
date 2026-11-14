@@ -3,7 +3,7 @@ import { Redirect, router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Baobi } from '../../components/Baobi';
-import { Logo, Village } from '../../components/Illustrations';
+import { LogoInline, Village } from '../../components/Illustrations';
 import { tap } from '../../components/ui';
 import { useStore } from '../../lib/store';
 import { colors, fonts, radius, shadow, spacing } from '../../theme';
@@ -41,8 +41,7 @@ export default function Accueil() {
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
       <View style={styles.top}>
-        <View style={{ width: 40 }} />
-        <Logo width={120} />
+        <LogoInline height={38} />
         <Pressable hitSlop={10} onPress={() => router.push('/traitement')} accessibilityLabel="Rappels">
           <Ionicons name="notifications-outline" size={26} color={colors.night} />
         </Pressable>
@@ -69,7 +68,7 @@ export default function Accueil() {
 }
 
 const styles = StyleSheet.create({
-  top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing(4), marginBottom: -spacing(2) },
+  top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing(4), paddingVertical: spacing(2) },
   body: { flex: 1, padding: spacing(4), paddingBottom: spacing(24), gap: spacing(4), backgroundColor: colors.sunLight, justifyContent: 'center' },
   row: { flexDirection: 'row', gap: spacing(4), flex: 1, maxHeight: 230 },
   tile: { borderRadius: radius.lg, borderBottomWidth: 6, padding: spacing(4), ...shadow },

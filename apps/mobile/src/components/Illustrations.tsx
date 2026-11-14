@@ -1,5 +1,6 @@
-import Svg, { Circle, ClipPath, Defs, G, LinearGradient, Path, Polygon, Rect, Stop, Text as SvgText } from 'react-native-svg';
-import { colors } from '../theme';
+import Svg, { Circle, ClipPath, Defs, G, LinearGradient, Path, Polygon, Rect, Stop } from 'react-native-svg';
+import { Image, Text, View } from 'react-native';
+import { colors, fonts } from '../theme';
 
 // Bandeau de motifs wax (bas d'écran).
 export function WaxBand({ height = 26 }: { height?: number }) {
@@ -97,24 +98,21 @@ export function Plant({ stage, height = 150 }: { stage: number; height?: number 
   );
 }
 
-// Logo « Teranga Santé » avec soleil.
+// Logo officiel « Teranga Santé » (fichier fourni), version complète empilée. `width` = largeur.
 export function Logo({ width = 220 }: { width?: number }) {
-  const rays = Array.from({ length: 7 }, (_, i) => -150 + i * 20);
+  return <Image source={require('../../assets/logo.png')} style={{ width, height: width * 0.979 }} resizeMode="contain" accessibilityLabel="Teranga Santé" />;
+}
+
+// Version horizontale (bandeaux) : emblème + nom aux couleurs du logo.
+export function LogoInline({ height = 40 }: { height?: number }) {
   return (
-    <Svg width={width} height={width * 0.62} viewBox="0 0 220 136">
-      <G transform="translate(152 34)">
-        {rays.map((a) => (
-          <Rect key={a} x={-3} y={-30} width={6} height={12} rx={3} fill={colors.sun} transform={`rotate(${a + 90})`} />
-        ))}
-        <Path d="M-14 0 A14 14 0 0 1 14 0 Z" fill={colors.sun} />
-      </G>
-      <SvgText x={110} y={74} fontSize={44} fontWeight="800" fill={colors.green} textAnchor="middle" fontFamily="Poppins_800ExtraBold">
-        Teranga
-      </SvgText>
-      <SvgText x={110} y={122} fontSize={44} fontWeight="800" fill={colors.orange} textAnchor="middle" fontFamily="Poppins_800ExtraBold">
-        Santé
-      </SvgText>
-    </Svg>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: height * 0.18 }} accessible accessibilityLabel="Teranga Santé">
+      <Image source={require('../../assets/logo-mark.png')} style={{ height, width: height * 1.586 }} resizeMode="contain" />
+      <View>
+        <Text style={{ fontFamily: fonts.black, fontSize: height * 0.4, lineHeight: height * 0.44, color: colors.green }}>Teranga</Text>
+        <Text style={{ fontFamily: fonts.black, fontSize: height * 0.4, lineHeight: height * 0.44, color: colors.orange }}>Santé</Text>
+      </View>
+    </View>
   );
 }
 

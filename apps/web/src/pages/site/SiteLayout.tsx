@@ -4,7 +4,7 @@ import { Link, NavLink, useLocation } from 'react-router-dom';
 import { Baobi } from '../../components/Baobi';
 import { WaxBand } from '../../components/Decor';
 import { HOME_BY_ROLE } from '../../components/Layout';
-import { Logo } from '../../components/ui';
+import { LogoInline } from '../../components/ui';
 import { useAuth } from '../../lib/auth';
 
 /** Mise en page publique du site vitrine (en-tête, pied de page). */
@@ -28,7 +28,7 @@ export function SiteLayout({ children, title }: { children: ReactNode; title?: s
     <div className="site">
       <header className="site-header">
         <div className="site-wrap site-header-row">
-          <Link to="/" aria-label="Teranga Santé — accueil" className="site-logo"><Logo size={96} /></Link>
+          <Link to="/" aria-label="Teranga Santé — accueil" className="site-logo"><LogoInline height={42} /></Link>
           <nav className={`site-nav ${open ? 'open' : ''}`} aria-label="Navigation du site">
             <NavLink to="/conseils">Conseils</NavLink>
             <NavLink to="/publications">Publications</NavLink>
@@ -52,7 +52,7 @@ export function SiteLayout({ children, title }: { children: ReactNode; title?: s
         <WaxBand height={18} />
         <div className="site-wrap site-footer-grid">
           <div>
-            <Logo size={110} light />
+            <LogoInline height={48} light />
             <p className="small" style={{ opacity: 0.85, maxWidth: 300 }}>
               Une porte d’entrée ludique et confidentielle vers l’information, le dépistage et les soins pour les jeunes de 18 à 35 ans au Sénégal.
             </p>

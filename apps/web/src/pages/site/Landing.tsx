@@ -15,7 +15,7 @@ function PhoneMock() {
   return (
     <div className="phone" aria-hidden="true">
       <div className="phone-screen">
-        <Logo size={92} />
+        <div style={{ marginTop: 6 }}><Logo size={64} /></div>
         <div className="phone-village"><Village height={70} /></div>
         <div className="phone-tiles">
           <div style={{ background: 'var(--blue)' }}><Stethoscope size={22} /><span>Je me fais dépister</span></div>

@@ -1,12 +1,12 @@
 // Charte Teranga Santé (maquette) : jaune soleil, vert profond, orange chaud, bleu nuit sur fond crème.
 export const colors = {
-  sun: '#F7B500',
+  sun: '#F8B400',
   sunLight: '#FFE7A3',
-  green: '#1E7B3C',
-  greenDark: '#145C2C',
+  green: '#076236',
+  greenDark: '#04472A',
   greenLight: '#E3F2E1',
-  orange: '#F26B1D',
-  orangeDark: '#D2540E',
+  orange: '#E85A05',
+  orangeDark: '#B84702',
   blue: '#1F5FBF',
   blueDark: '#164A97',
   night: '#14213D',

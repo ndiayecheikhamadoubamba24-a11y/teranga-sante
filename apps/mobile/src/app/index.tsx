@@ -28,7 +28,7 @@ export default function Splash() {
   return (
     <SafeAreaView style={styles.root} edges={['top']}>
       <View style={styles.top}>
-        <Logo width={230} />
+        <Logo width={170} />
         <Text style={styles.tagline}>{t('tagline')}</Text>
       </View>
 
@@ -61,8 +61,8 @@ export default function Splash() {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.cream },
-  top: { alignItems: 'center', paddingTop: spacing(6) },
-  tagline: { fontFamily: fonts.semibold, fontSize: 15, color: colors.night, textAlign: 'center', marginTop: -spacing(1) },
+  top: { alignItems: 'center', paddingTop: spacing(4) },
+  tagline: { fontFamily: fonts.semibold, fontSize: 15, color: colors.night, textAlign: 'center', marginTop: spacing(2) },
   hero: { flex: 1, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center', paddingHorizontal: spacing(4) },
   bubble: { marginBottom: spacing(30), marginLeft: -spacing(2), maxWidth: 150 },
   langCard: {

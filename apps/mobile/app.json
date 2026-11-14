@@ -36,6 +36,15 @@
         {
           "microphonePermission": "Le micro sert uniquement à envoyer des messages vocaux à l’infirmière."
         }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 220,
+          "resizeMode": "contain",
+          "backgroundColor": "#FFF8EC"
+        }
       ]
     ],
     "scheme": "teranga"

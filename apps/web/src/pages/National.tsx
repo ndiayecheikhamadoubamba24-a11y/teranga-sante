@@ -18,7 +18,7 @@ type Overview = {
 };
 
 // Séquentiel : une seule teinte (vert), du clair au foncé.
-const RAMP = ['#DDEFD9', '#A9D6A2', '#6DB36D', '#3A8F4D', '#145C2C'];
+const RAMP = ['#DDEFD9', '#A6D3A4', '#62AD72', '#22834D', '#04472A'];
 const TOPIC: Record<string, string> = { depister: 'Dépistage', positif: 'Traitement', proteger: 'Prévention', prep: 'PrEP', autotest: 'Autotest', fallback: 'Autres questions' };
 const AXIS = { stroke: '#B8AE99', fontSize: 12, tickLine: false, axisLine: false } as const;
 

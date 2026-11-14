@@ -14,7 +14,7 @@ export function Avatar({ face, accessory, size = 80, bg = true }: { face: number
     <Svg width={size} height={size} viewBox="0 0 100 100">
       {bg && <Rect width={100} height={100} rx={18} fill={AVATAR_BG[face % 4]} />}
       {/* Épaules */}
-      <Path d="M18 100 C18 80 32 72 50 72 C68 72 82 80 82 100 Z" fill={['#F26B1D', '#1F5FBF', '#E8F0FA', '#1E7B3C'][face % 4]} />
+      <Path d="M18 100 C18 80 32 72 50 72 C68 72 82 80 82 100 Z" fill={['#E85A05', '#1F5FBF', '#E8F0FA', '#076236'][face % 4]} />
       <Rect x={44} y={62} width={12} height={12} fill={skin} />
       {/* Cheveux arrière */}
       {face === 0 && <Circle cx={50} cy={20} r={12} fill="#2B1A10" />}

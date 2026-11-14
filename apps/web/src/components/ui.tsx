@@ -4,18 +4,21 @@ import { PRO_STATUS } from '../lib/format';
 import type { ProStatus } from '../lib/supabase';
 import { Baobi } from './Baobi';
 
-export function Logo({ size = 120, light }: { size?: number; light?: boolean }) {
+/** Logo officiel complet (empilé). `size` = largeur en px. */
+export function Logo({ size = 120 }: { size?: number }) {
+  return <img src="/logo.png" width={size} height={Math.round(size * 0.979)} alt="Teranga Santé" style={{ display: 'block' }} />;
+}
+
+/** Version horizontale pour les bandeaux : emblème + nom aux couleurs du logo. */
+export function LogoInline({ height = 44, light }: { height?: number; light?: boolean }) {
   return (
-    <svg width={size} height={size * 0.62} viewBox="0 0 220 136" role="img" aria-label="Teranga Santé">
-      <g transform="translate(152 34)">
-        {[-150, -130, -110, -90, -70, -50, -30].map((a) => (
-          <rect key={a} x={-3} y={-30} width={6} height={12} rx={3} fill="#F7B500" transform={`rotate(${a + 90})`} />
-        ))}
-        <path d="M-14 0 A14 14 0 0 1 14 0 Z" fill="#F7B500" />
-      </g>
-      <text x={110} y={74} fontSize={44} fontWeight={800} fill={light ? '#FFFFFF' : '#1E7B3C'} textAnchor="middle" fontFamily="Poppins">Teranga</text>
-      <text x={110} y={122} fontSize={44} fontWeight={800} fill={light ? '#FFE7A3' : '#F26B1D'} textAnchor="middle" fontFamily="Poppins">Santé</text>
-    </svg>
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: height * 0.18 }} aria-label="Teranga Santé">
+      <img src="/logo-mark.png" alt="" height={height} width={Math.round(height * 1.586)} style={{ display: 'block' }} />
+      <span style={{ display: 'flex', flexDirection: 'column', lineHeight: 0.95, fontWeight: 800, fontSize: height * 0.4, letterSpacing: -0.3 }}>
+        <span style={{ color: light ? '#FFFFFF' : '#076236' }}>Teranga</span>
+        <span style={{ color: light ? '#F8B400' : '#E85A05' }}>Santé</span>
+      </span>
+    </span>
   );
 }
 

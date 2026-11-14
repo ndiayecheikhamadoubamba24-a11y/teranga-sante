@@ -9,7 +9,7 @@ import { ROLE_LABEL } from '../lib/format';
 import { supabase, type ProRole } from '../lib/supabase';
 import { CentreProvider, useCentre } from '../lib/centre';
 import { useRealtime } from '../lib/useRealtime';
-import { initials, Logo, StatusSelect, useToast } from './ui';
+import { initials, LogoInline, StatusSelect, useToast } from './ui';
 
 type Item = { to: string; label: string; icon: ReactNode; badge?: 'messages' };
 
@@ -120,7 +120,7 @@ export function Layout() {
     <CentreProvider>
     <div className="shell">
       <aside className="sidebar">
-        <div className="logo"><Logo size={130} light /></div>
+        <div className="logo"><LogoInline height={40} light /></div>
         <nav className="nav" aria-label="Menu principal">
           {MENUS[pro.role].map((m) => (
             <NavLink key={m.to} to={m.to}>

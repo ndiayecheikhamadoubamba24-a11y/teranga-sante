@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, type ScrollViewInstance, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Linking, Platform, Pressable, ScrollView, type ScrollViewInstance, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Baobi } from '../components/Baobi';
 import { Bubble, Header, PrivacyNote, tap } from '../components/ui';
@@ -10,12 +10,23 @@ import { useStore } from '../lib/store';
 import { supabase } from '../lib/supabase';
 import { colors, fonts, radius, shadow, spacing } from '../theme';
 
-type Line = { from: 'bot' | 'me'; text: string };
+type AiAction = 'none' | 'centres' | 'infirmieres' | 'reserver' | 'jeu' | 'urgence';
+type Line = { from: 'bot' | 'me'; text: string; ai?: boolean; action?: AiAction };
+
+// Boutons proposés sous une réponse de l'IA.
+const ACTION_BUTTON: Record<Exclude<AiAction, 'none'>, { label: string; icon: keyof typeof Ionicons.glyphMap; go: () => void }> = {
+  centres: { label: 'Voir les centres de dépistage', icon: 'location', go: () => router.push('/carte') },
+  reserver: { label: 'Réserver un créneau anonyme', icon: 'calendar', go: () => router.push('/carte') },
+  infirmieres: { label: 'Parler à une infirmière', icon: 'chatbubbles', go: () => router.push('/infirmieres') },
+  jeu: { label: 'Jouer à Vrai ou Faux', icon: 'game-controller', go: () => router.push('/jeu') },
+  urgence: { label: 'Appeler le SAMU (1515)', icon: 'call', go: () => Linking.openURL('tel:1515') },
+};
 type Row = { id: string; message: Record<string, string>; options: { label: Record<string, string>; next?: string; route?: string }[] };
 
 // Écran 7 — Chatbot « Question sans honte » (M8) : réponses guidées par boutons, orientation vers les modules.
 export default function Chatbot() {
-  const { settings } = useStore();
+  const { settings, syncNow } = useStore();
+  const [thinking, setThinking] = useState(false);
   const [nodes, setNodes] = useState<Record<string, ChatNode>>(CHATBOT);
   const [lines, setLines] = useState<Line[]>([]);
   const [current, setCurrent] = useState<ChatNode>(CHATBOT.root);
@@ -69,11 +80,33 @@ export default function Chatbot() {
     if (o.next) goTo(o.next, o.label);
   };
 
-  const send = () => {
+  // Question libre : réponse de l'IA (Groq, via la fonction serveur ai-chat).
+  // En cas d'échec (hors ligne, IA non configurée), on retombe sur les réponses validées par mots-clés.
+  const send = async () => {
     const q = input.trim();
-    if (!q) return;
+    if (!q || thinking) return;
     setInput('');
-    goTo(matchNode(q), q);
+    const history = [...lines, { from: 'me' as const, text: q }];
+    setLines(history);
+    setThinking(true);
+    setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 50);
+    try {
+      if (!(await syncNow())) throw new Error('offline');
+      const { data, error } = await supabase.functions.invoke('ai-chat', {
+        body: { lang: settings.lang, messages: history.map((l) => ({ role: l.from === 'me' ? 'user' : 'assistant', content: l.text })) },
+      });
+      if (error || !data?.reply) throw error ?? new Error('vide');
+      setLines((l) => [...l, { from: 'bot', text: data.reply, ai: true, action: data.action as AiAction }]);
+      setCurrent(nodes.root);
+    } catch {
+      const node = nodes[matchNode(q)] ?? nodes.fallback;
+      track(node.id);
+      setLines((l) => [...l, { from: 'bot', text: node.message }]);
+      setCurrent(node);
+    } finally {
+      setThinking(false);
+      setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 80);
+    }
   };
 
   return (
@@ -98,9 +131,29 @@ export default function Chatbot() {
                 </View>
                 <View style={styles.bot}>
                   <Text style={styles.botText}>{l.text}</Text>
+                  {l.action && l.action !== 'none' && (
+                    <Pressable
+                      onPress={() => { tap(); ACTION_BUTTON[l.action as Exclude<AiAction, 'none'>].go(); }}
+                      style={[styles.aiAction, l.action === 'urgence' && { backgroundColor: colors.red }]}
+                    >
+                      <Ionicons name={ACTION_BUTTON[l.action].icon} size={16} color={colors.white} />
+                      <Text style={styles.aiActionText}>{ACTION_BUTTON[l.action].label}</Text>
+                    </Pressable>
+                  )}
+                  {l.ai && <Text style={styles.aiNote}>Réponse générée par l’IA · pour ta situation, parle à une infirmière</Text>}
                 </View>
               </View>
             ),
+          )}
+
+          {thinking && (
+            <View style={styles.botRow}>
+              <View style={styles.botAvatar}><Baobi size={34} /></View>
+              <View style={[styles.bot, { flexDirection: 'row', alignItems: 'center', gap: spacing(2) }]}>
+                <ActivityIndicator size="small" color={colors.green} />
+                <Text style={styles.aiNote}>Baobi réfléchit…</Text>
+              </View>
+            </View>
           )}
 
           <View style={styles.options}>
@@ -151,6 +204,9 @@ const styles = StyleSheet.create({
   bot: { flex: 1, backgroundColor: colors.white, borderRadius: radius.lg, borderBottomLeftRadius: 6, padding: spacing(3), ...shadow },
   botText: { fontFamily: fonts.medium, fontSize: 15, color: colors.night, lineHeight: 21 },
   options: { gap: spacing(3), marginTop: spacing(2) },
+  aiAction: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', backgroundColor: colors.green, borderRadius: radius.pill, paddingHorizontal: spacing(3), paddingVertical: spacing(2), marginTop: spacing(2) },
+  aiActionText: { fontFamily: fonts.bold, fontSize: 13, color: colors.white },
+  aiNote: { fontFamily: fonts.regular, fontSize: 11, color: colors.muted, marginTop: spacing(1) },
   option: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing(2), alignSelf: 'center', minWidth: '78%',
     backgroundColor: colors.white, borderRadius: radius.pill, borderWidth: 2, borderColor: colors.border, paddingVertical: spacing(3), paddingHorizontal: spacing(5),

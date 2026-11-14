@@ -13,7 +13,7 @@ Application ludique et confidentielle (VIH, jeunes 18–35 ans, Sénégal).
 1. Dashboard Supabase → **SQL Editor** → exécuter dans l'ordre :
    `supabase/migrations/20261114000000_init.sql`, `20261115000000_admin.sql`, `20261116000000_chat.sql`,
    `20261117000000_super_admin_role.sql` **(seul, puis cliquer Run)**, `20261117000100_super_admin.sql`, `20261118000000_temp_password.sql`,
-   `20261119000000_site.sql`, `20261120000000_team.sql`, `20261121000000_nurses.sql`, puis `supabase/seed.sql` (données fictives).
+   `20261119000000_site.sql`, `20261120000000_team.sql`, `20261121000000_nurses.sql`, `20261122000000_ai.sql`, puis `supabase/seed.sql` (données fictives).
 2. **Authentication → Sign In / Providers** → activer **Allow anonymous sign-ins** (usagers sans compte, pseudo uniquement).
 3. Comptes et données de démo (6 mois de rendez-vous, 14 régions, conversations, signalements) — en local, avec la clé secrète :
    ```bash
@@ -28,6 +28,26 @@ Application ludique et confidentielle (VIH, jeunes 18–35 ans, Sénégal).
    - *Avec la CLI* : `supabase login`, puis depuis la racine du projet
      `supabase functions deploy manage-users --project-ref aqmcghhktfsntdcrfxtd`
    - Après chaque modification du fichier, redéployer.
+
+### Intelligence artificielle (chatbot et questions du jeu)
+
+Les clés API ne vont **jamais** dans le code des apps : elles sont stockées dans les **secrets Supabase** et utilisées
+uniquement par des fonctions serveur.
+
+1. Supabase → **Edge Functions** → **Secrets** (ou *Project Settings → Edge Functions*) → ajouter :
+   - `GROQ_API_KEY` = clé Groq (`gsk_…`) — chatbot « Question sans honte »
+   - `GEMINI_API_KEY` = clé Google Gemini — génération des questions Vrai ou Faux
+   - facultatif : `GROQ_MODEL` (défaut `llama-3.3-70b-versatile`), `GEMINI_MODEL` (défaut `gemini-2.5-flash`)
+2. Déployer les fonctions `ai-chat` et `ai-quiz` (Dashboard → Edge Functions → *Deploy a new function* → *Via Editor*,
+   en collant `supabase/functions/ai-chat/index.ts` puis `ai-quiz/index.ts`), ou en CLI :
+   `supabase functions deploy ai-chat` et `supabase functions deploy ai-quiz`.
+
+- **Chatbot** : les questions libres sont envoyées à l'IA avec des règles strictes (pas de diagnostic, orientation vers
+  infirmière / centre, urgence TPE < 72 h et SAMU 1515, jamais de nom ni de numéro — masqués avant envoi). Les boutons
+  restent des réponses validées. Si l'IA est indisponible, l'app retombe sur les réponses par mots-clés. 40 questions
+  IA par jour et par utilisateur. Le texte des questions n'est pas conservé (seul le sujet, pour les statistiques).
+- **Jeu** : dans l'admin, *Contenus → Jeux → Générer avec l'IA*. Les questions arrivent en **brouillon** avec la mention
+  « Générée par l'IA » ; une infirmière les relit puis les publie pour qu'elles apparaissent dans le jeu.
 
 ### Créer le premier super admin (sans le script de démo)
 

@@ -1,4 +1,4 @@
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Sparkles, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { Baobi } from '../components/Baobi';
 import { Empty, Modal, useToast } from '../components/ui';
@@ -8,7 +8,7 @@ import { logAction, supabase, type I18n, type Lang } from '../lib/supabase';
 
 type Tab = 'articles' | 'quiz' | 'chatbot';
 type Article = { id: string; title: I18n; body: I18n; illustration: string | null; published: boolean; category: 'conseil' | 'actualite' };
-type Quiz = { id: string; statement: I18n; answer: boolean; explanation: I18n; topic: string | null; published: boolean };
+type Quiz = { id: string; statement: I18n; answer: boolean; explanation: I18n; topic: string | null; published: boolean; source?: 'manuel' | 'ia' };
 type ChatOption = { label: I18n; next?: string; route?: string };
 type Node = { id: string; message: I18n; options: ChatOption[]; published: boolean };
 type Item = { kind: 'articles'; v: Article } | { kind: 'quiz'; v: Quiz } | { kind: 'chatbot'; v: Node };
@@ -44,6 +44,7 @@ export default function Contents() {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [preview, setPreview] = useState<Item | null>(null);
   const [editing, setEditing] = useState<Item | null>(null);
+  const [generating, setGenerating] = useState(false);
 
   const load = useCallback(async () => {
     const [a, q, n] = await Promise.all([
@@ -87,6 +88,7 @@ export default function Contents() {
               <button className={tab === 'quiz' ? 'active' : ''} onClick={() => setTab('quiz')}>Jeux</button>
               <button className={tab === 'chatbot' ? 'active' : ''} onClick={() => setTab('chatbot')}>Chatbot</button>
             </div>
+            {tab === 'quiz' && <button className="btn blue" onClick={() => setGenerating(true)}><Sparkles size={18} /> Générer avec l’IA</button>}
             <button className="btn" onClick={() => setEditing(blank())}><Plus size={18} /> Créer</button>
           </div>
           {items.length === 0 && <Empty title="Rien ici pour l’instant" hint="Crée un premier contenu : il restera en brouillon jusqu’à sa publication." />}
@@ -100,6 +102,11 @@ export default function Contents() {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{title}</div>
                   <div className="small muted" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{sub}</div>
+                  {it.kind === 'quiz' && it.v.source === 'ia' && (
+                    <div className="small" style={{ color: 'var(--blue)', fontWeight: 600 }}>
+                      <Sparkles size={12} style={{ verticalAlign: -1 }} /> Générée par l’IA{it.v.published ? ' · validée' : ' · à relire avant publication'}
+                    </div>
+                  )}
                   {miss.length > 0 && <div className="small" style={{ color: '#8a5a00' }}>À traduire : {miss.map((l) => LANG_LABEL[l]).join(', ')}</div>}
                 </div>
                 <button className={`pill ${it.v.published ? 'good' : 'warning'}`} style={{ border: 0 }} onClick={(e) => { e.stopPropagation(); togglePublish(it); }} title="Changer le statut">
@@ -116,6 +123,7 @@ export default function Contents() {
           <PhonePreview item={editing ?? current} />
         </aside>
       </div>
+      {generating && <GenerateModal onClose={() => setGenerating(false)} onDone={() => { setGenerating(false); setTab('quiz'); load(); }} />}
       {editing && <Editor item={editing} onChange={setEditing} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); load(); }} />}
     </div>
   );
@@ -282,6 +290,48 @@ function Editor({ item, onChange, onClose, onSaved }: { item: Item; onChange: (i
         <span className="spacer" />
         {item.v.id && item.kind !== 'chatbot' && <button className="btn red sm" onClick={remove}><Trash2 size={14} /> Supprimer</button>}
       </div>
+    </Modal>
+  );
+}
+
+/** Génération de questions Vrai ou Faux par l'IA (Gemini, fonction serveur ai-quiz) : créées en brouillon. */
+function GenerateModal({ onClose, onDone }: { onClose: () => void; onDone: () => void }) {
+  const toast = useToast();
+  const [count, setCount] = useState(5);
+  const [topic, setTopic] = useState('');
+  const [busy, setBusy] = useState(false);
+  const run = async () => {
+    setBusy(true);
+    const { data, error } = await supabase.functions.invoke('ai-quiz', { body: { count, topic } });
+    setBusy(false);
+    if (error) {
+      let msg = error.message;
+      try {
+        const ctx = (error as { context?: Response }).context;
+        if (ctx) msg = (await ctx.json()).error ?? msg;
+      } catch {}
+      if (/Failed to send|non-2xx|404/i.test(msg)) msg = 'La fonction serveur « ai-quiz » n’est pas déployée ou la clé GEMINI_API_KEY manque (voir le README).';
+      return toast(msg);
+    }
+    toast(`${data.inserted} question(s) générée(s) en brouillon : relis-les puis publie-les.`);
+    onDone();
+  };
+  return (
+    <Modal title="Générer des questions avec l’IA" onClose={onClose}>
+      <div className="field">
+        <label htmlFor="gq-c">Nombre de questions</label>
+        <select id="gq-c" className="select" value={count} onChange={(e) => setCount(Number(e.target.value))}>
+          {[3, 5, 8, 10].map((n) => <option key={n} value={n}>{n}</option>)}
+        </select>
+      </div>
+      <div className="field">
+        <label htmlFor="gq-t">Thème (facultatif)</label>
+        <input id="gq-t" className="input" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="ex : PrEP, autotest, idées reçues sur la transmission…" maxLength={80} />
+      </div>
+      <div className="banner info small">
+        <span>Les questions sont créées en <strong>brouillon</strong>. Une infirmière doit vérifier chaque affirmation et son explication avant de la publier dans le jeu.</span>
+      </div>
+      <button className="btn lg blue" disabled={busy} onClick={run}><Sparkles size={18} /> {busy ? 'Génération en cours…' : `Générer ${count} questions`}</button>
     </Modal>
   );
 }

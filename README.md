@@ -42,10 +42,12 @@ uniquement par des fonctions serveur.
    en collant `supabase/functions/ai-chat/index.ts` puis `ai-quiz/index.ts`), ou en CLI :
    `supabase functions deploy ai-chat` et `supabase functions deploy ai-quiz`.
 
-- **Chatbot** : les questions libres sont envoyées à l'IA avec des règles strictes (pas de diagnostic, orientation vers
-  infirmière / centre, urgence TPE < 72 h et SAMU 1515, jamais de nom ni de numéro — masqués avant envoi). Les boutons
-  restent des réponses validées. Si l'IA est indisponible, l'app retombe sur les réponses par mots-clés. 40 questions
-  IA par jour et par utilisateur. Le texte des questions n'est pas conservé (seul le sujet, pour les statistiques).
+- **Chatbot** : vraie conversation libre avec Baobi, **à l'écrit ou en vocal** (le vocal est transcrit par Whisper sur
+  Groq, même clé ; secret facultatif `GROQ_STT_MODEL`, défaut `whisper-large-v3-turbo`). Pas de questions à choisir :
+  la personne s'exprime avec ses mots, Baobi garde le fil de l'échange et peut proposer une action (centres, infirmière,
+  réservation, jeu, SAMU). Règles strictes : pas de diagnostic, urgence TPE < 72 h et SAMU 1515, jamais de nom ni de
+  numéro (masqués avant envoi). Sans IA (hors ligne / non configurée) : réponse de secours par mots-clés.
+  40 messages IA par jour et par utilisateur. Ni le texte ni l'audio ne sont conservés (seul le sujet, pour les stats).
 - **Jeu** : dans l'admin, *Contenus → Jeux → Générer avec l'IA*. Les questions arrivent en **brouillon** avec la mention
   « Générée par l'IA » ; une infirmière les relit puis les publie pour qu'elles apparaissent dans le jeu.
 

@@ -1,5 +1,6 @@
 // Fonction Edge : chatbot « Question sans honte » propulsé par Groq.
-// Secrets requis (Supabase → Edge Functions → Secrets) : GROQ_API_KEY ; facultatif : GROQ_MODEL.
+// Secrets requis (Supabase → Edge Functions → Secrets) : GROQ_API_KEY ; facultatif : GROQ_MODEL, GROQ_STT_MODEL.
+// Deux usages : { messages } → réponse de Baobi ; { audio } → transcription d'une question vocale (Whisper sur Groq).
 // Déploiement : supabase functions deploy ai-chat
 // La clé Groq ne quitte jamais le serveur. Le contenu des questions n'est PAS enregistré (seul le sujet l'est).
 import { createClient } from 'npm:@supabase/supabase-js@2.45.4';
@@ -14,7 +15,10 @@ const TOPICS = ['depister', 'proteger', 'prep', 'autotest', 'positif', 'traiteme
 const ROUTES: Record<string, string | null> = { none: null, centres: '/carte', infirmieres: '/infirmieres', reserver: '/carte', jeu: '/jeu', urgence: 'urgence' };
 
 const SYSTEM = `Tu es Baobi, l'assistant de Teranga Santé, une application pour les jeunes de 18 à 35 ans au Sénégal
-(information VIH/IST, dépistage, prévention, traitement). Tu réponds à des questions anonymes, sans jugement.
+(information VIH/IST, dépistage, prévention, traitement). Tu mènes une vraie conversation, anonyme et sans jugement :
+la personne s'exprime librement (parfois maladroitement, avec des fautes ou en mélangeant français et wolof).
+Écoute, reformule si besoin, rassure, et pose au plus UNE question simple pour mieux comprendre quand c'est utile
+(jamais d'information personnelle). Tiens compte de tout l'échange précédent.
 
 RÈGLES ABSOLUES
 - Réponds en 2 à 5 phrases courtes, simples, chaleureuses, en tutoyant. Pas de jargon. Pas de liste longue.
@@ -64,6 +68,27 @@ Deno.serve(async (req) => {
   }
 
   const body = await req.json().catch(() => ({}));
+
+  // ---------- Question vocale → texte (rien n'est conservé) ----------
+  if (typeof body.audio === 'string') {
+    const b64 = body.audio.replace(/^data:[^,]+,/, '');
+    if (b64.length > 2_000_000) return json({ error: 'message vocal trop long (60 s maximum)' }, 413);
+    const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+    const mime = typeof body.mime === 'string' ? body.mime : 'audio/mp4';
+    const form = new FormData();
+    form.append('file', new Blob([bytes], { type: mime }), mime.includes('webm') ? 'question.webm' : 'question.m4a');
+    form.append('model', Deno.env.get('GROQ_STT_MODEL') ?? 'whisper-large-v3-turbo');
+    form.append('response_format', 'json');
+    form.append('temperature', '0');
+    const tr = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', { method: 'POST', headers: { Authorization: `Bearer ${key}` }, body: form });
+    if (!tr.ok) {
+      console.error('Groq STT', tr.status, (await tr.text()).slice(0, 300));
+      return json({ error: `transcription indisponible (${tr.status})` }, 502);
+    }
+    const t = await tr.json();
+    return json({ text: String(t?.text ?? '').trim().slice(0, 1000) });
+  }
+
   const history: { role: string; content: string }[] = Array.isArray(body.messages) ? body.messages : [];
   const messages = history
     .filter((m) => (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string' && m.content.trim())

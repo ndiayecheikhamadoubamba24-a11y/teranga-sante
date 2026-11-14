@@ -18,6 +18,9 @@ const Profile = lazy(() => import('./pages/Profile'));
 const Reports = lazy(() => import('./pages/Reports'));
 const StocksTeam = lazy(() => import('./pages/StocksTeam'));
 const Users = lazy(() => import('./pages/admin/Users'));
+const Landing = lazy(() => import('./pages/site/Landing'));
+const SiteArticles = lazy(() => import('./pages/site/Articles').then((m) => ({ default: m.ArticleList })));
+const SiteArticle = lazy(() => import('./pages/site/Articles').then((m) => ({ default: m.ArticlePage })));
 const Centres = lazy(() => import('./pages/admin/Centres'));
 const Journal = lazy(() => import('./pages/admin/Journal'));
 
@@ -47,7 +50,14 @@ export default function App() {
       <ToastProvider>
         <BrowserRouter>
           <Routes>
+            {/* Site vitrine public */}
+            <Route path="/" element={<Suspense fallback={null}><Landing /></Suspense>} />
+            <Route path="/conseils" element={<Suspense fallback={null}><SiteArticles category="conseil" /></Suspense>} />
+            <Route path="/publications" element={<Suspense fallback={null}><SiteArticles category="actualite" /></Suspense>} />
+            <Route path="/article/:id" element={<Suspense fallback={null}><SiteArticle /></Suspense>} />
+            {/* Espace professionnel */}
             <Route path="/connexion" element={<Login />} />
+            <Route path="/espace" element={<Home />} />
             <Route element={<Layout />}>
               <Route path="/tableau-de-bord" element={<Only roles={['nurse']}><NurseDashboard /></Only>} />
               <Route path="/agenda" element={<Only roles={['nurse', 'manager', 'super_admin']}><NeedCentre><Agenda /></NeedCentre></Only>} />
@@ -64,7 +74,7 @@ export default function App() {
               <Route path="/profil" element={<Suspense fallback={null}><Profile /></Suspense>} />
               <Route path="/aide" element={<Suspense fallback={null}><Help /></Suspense>} />
             </Route>
-            <Route path="*" element={<Home />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
       </ToastProvider>

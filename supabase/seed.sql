@@ -43,6 +43,27 @@ insert into public.chatbot_nodes (id, message, options) values
   ('positif', '{"fr": "Tu n''es pas seul·e. Un traitement efficace existe : bien suivi, il permet de vivre longtemps et en bonne santé. Une infirmière peut t''accompagner dès maintenant."}', '[{"label": {"fr": "Parler à une infirmière"}, "route": "/discussion"}, {"label": {"fr": "Autre question"}, "next": "root"}]')
 on conflict (id) do update set message = excluded.message, options = excluded.options;
 
+-- Site vitrine : conseils et publications (FICTIFS — à faire valider par une infirmière avant diffusion réelle)
+insert into public.articles (title, body, illustration, published, category) values
+  ('{"fr":"Se faire dépister : comment ça se passe ?"}',
+   '{"fr":"Le dépistage du VIH est rapide, gratuit et confidentiel dans les centres partenaires.\n\nTu peux réserver un créneau dans l’application sans donner ton nom : tu reçois un code (par exemple BAO-4821) que tu présentes à l’accueil.\n\nUne infirmière t’explique tout avant et après le test. Le résultat n’est communiqué qu’à toi."}',
+   'baobi-thumb', true, 'conseil'),
+  ('{"fr":"La PrEP, c’est quoi ?"}',
+   '{"fr":"La PrEP est un médicament qui protège du VIH avant une exposition. Elle se prend sur prescription, avec un suivi régulier en centre.\n\nCe n’est pas un vaccin, et elle ne protège pas des autres IST : le préservatif reste utile.\n\nParles-en à une infirmière pour savoir si elle est adaptée à ta situation."}',
+   'baobi', true, 'conseil'),
+  ('{"fr":"Démêler le vrai du faux sur le VIH"}',
+   '{"fr":"Le VIH ne se transmet ni par la nourriture, ni par les bisous, ni par les moustiques.\n\nOn peut vivre longtemps et en bonne santé avec un traitement bien suivi. Une personne dont la charge virale est indétectable ne transmet pas le VIH par voie sexuelle (I = I).\n\nTeste tes connaissances avec le jeu Vrai ou Faux de l’application !"}',
+   'baobi-wave', true, 'conseil'),
+  ('{"fr":"Les bons réflexes pour se protéger"}',
+   '{"fr":"Le préservatif à chaque rapport, la PrEP si tu es plus exposé·e, et un dépistage régulier : trois réflexes simples.\n\nEn cas de rapport à risque, ne reste pas seul·e : contacte rapidement un centre ou une infirmière via l’application."}',
+   'baobi-cheer', true, 'conseil'),
+  ('{"fr":"Teranga Santé au Hack4VIH 2026"}',
+   '{"fr":"Teranga Santé est présentée au Hack4VIH, du 14 au 16 décembre 2026, aux JSSS5 (King Fahd Palace).\n\nL’application réunit information ludique, dépistage, réservation anonyme et échanges avec des infirmières pour les jeunes de 18 à 35 ans."}',
+   'baobi-cheer', true, 'actualite'),
+  ('{"fr":"Nouveaux centres partenaires à Pikine et Thiès"}',
+   '{"fr":"Deux nouveaux centres rejoignent le réseau : l’Espace Santé Pikine et le Point Écoute Thiès.\n\nRetrouve leurs horaires et réserve un créneau anonyme depuis la carte des centres de l’application."}',
+   'baobi-thumb', true, 'actualite');
+
 -- Les comptes infirmières/admins se créent dans Auth (Dashboard > Authentication > Add user),
 -- puis : insert into public.pros (id, role, centre_id, display_name, specialty, languages, status)
 --        values ('<uuid du user>', 'nurse', '11111111-0000-0000-0000-000000000001', 'Awa', 'Dépistage & PrEP', '{fr,wo}', 'online');

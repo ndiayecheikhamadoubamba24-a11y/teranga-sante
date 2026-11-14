@@ -129,7 +129,7 @@ export function Layout() {
           ))}
           <NavLink to="/profil"><User size={18} /><span className="label">Profil</span></NavLink>
           <NavLink to="/aide"><HelpCircle size={18} /><span className="label">Aide</span></NavLink>
-          <button onClick={async () => { await signOut(); navigate('/connexion'); }}>
+          <button onClick={async () => { await signOut(); navigate('/'); }}>
             <LogOut size={18} /><span className="label">Déconnexion</span>
           </button>
         </nav>

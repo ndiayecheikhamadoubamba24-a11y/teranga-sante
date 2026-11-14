@@ -1,6 +1,6 @@
-import { KeyRound, Lock, ShieldCheck, User } from 'lucide-react';
+import { ArrowLeft, KeyRound, Lock, ShieldCheck, User } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { Baobi } from '../components/Baobi';
 import { Village, WaxBand } from '../components/Decor';
 import { HOME_BY_ROLE } from '../components/Layout';
@@ -72,7 +72,8 @@ export default function Login() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', padding: 24, background: 'var(--cream)' }}>
+    <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', alignContent: 'center', gap: 16, padding: 24, background: 'var(--cream)' }}>
+      <Link to="/" className="link" style={{ width: 'min(920px, 100%)' }}><ArrowLeft size={14} /> Retour au site Teranga Santé</Link>
       <div className="card" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', padding: 0, overflow: 'hidden', width: 'min(920px, 100%)', minHeight: 540 }}>
         <div style={{ background: '#FFF1CC', display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 32, position: 'relative' }}>
           <Logo size={200} />

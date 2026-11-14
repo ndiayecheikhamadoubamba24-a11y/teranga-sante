@@ -13,7 +13,7 @@ Application ludique et confidentielle (VIH, jeunes 18–35 ans, Sénégal).
 1. Dashboard Supabase → **SQL Editor** → exécuter dans l'ordre :
    `supabase/migrations/20261114000000_init.sql`, `20261115000000_admin.sql`, `20261116000000_chat.sql`,
    `20261117000000_super_admin_role.sql` **(seul, puis cliquer Run)**, `20261117000100_super_admin.sql`, `20261118000000_temp_password.sql`,
-   puis `supabase/seed.sql` (données fictives).
+   `20261119000000_site.sql`, puis `supabase/seed.sql` (données fictives).
 2. **Authentication → Sign In / Providers** → activer **Allow anonymous sign-ins** (usagers sans compte, pseudo uniquement).
 3. Comptes et données de démo (6 mois de rendez-vous, 14 régions, conversations, signalements) — en local, avec la clé secrète :
    ```bash
@@ -77,7 +77,22 @@ npx expo start         # scanner le QR avec Expo Go
 - Mode discret : secouer le téléphone → faux écran météo ; appui long sur la température pour revenir.
 - Wolof et pulaar : structure prête dans `src/lib/i18n.ts`, traductions à fournir par des locuteurs natifs.
 
-## 3. Web (admin)
+## 3. Web — site vitrine + espace professionnel
+
+Le même projet `apps/web` contient :
+- **le site public** : `/` (accueil), `/conseils`, `/publications`, `/article/:id`, section « Installer l'application » ;
+- **l'espace professionnel** : bouton « Se connecter » → `/connexion` (super admin, CNLS, responsable, infirmière).
+
+Les conseils et publications sont les fiches « Infos santé » **publiées** dans l'admin (Contenus → rubrique *Conseil santé* ou *Publication*).
+Quand l'app mobile est en ligne, renseigner dans `apps/web/.env` :
+```
+VITE_ANDROID_URL=https://play.google.com/store/apps/details?id=sn.teranga.sante   # ou lien direct .apk
+VITE_IOS_URL=
+```
+→ le site affiche alors le bouton de téléchargement, un QR code et les étapes d'installation (sinon « Bientôt disponible »).
+Hébergement : `npm run build` puis déployer `dist/` (Netlify / Vercel : la redirection des routes est déjà configurée).
+
+
 
 ```bash
 cd apps/web

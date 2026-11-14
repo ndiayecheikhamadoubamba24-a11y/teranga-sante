@@ -7,7 +7,7 @@ import { LANG_LABEL } from '../lib/format';
 import { logAction, supabase, type I18n, type Lang } from '../lib/supabase';
 
 type Tab = 'articles' | 'quiz' | 'chatbot';
-type Article = { id: string; title: I18n; body: I18n; illustration: string | null; published: boolean };
+type Article = { id: string; title: I18n; body: I18n; illustration: string | null; published: boolean; category: 'conseil' | 'actualite' };
 type Quiz = { id: string; statement: I18n; answer: boolean; explanation: I18n; topic: string | null; published: boolean };
 type ChatOption = { label: I18n; next?: string; route?: string };
 type Node = { id: string; message: I18n; options: ChatOption[]; published: boolean };
@@ -62,7 +62,7 @@ export default function Contents() {
   const current = preview && preview.kind === tab ? preview : items[0] ?? null;
 
   const blank = (): Item => tab === 'articles'
-    ? { kind: 'articles', v: { id: '', title: {}, body: {}, illustration: 'baobi', published: false } }
+    ? { kind: 'articles', v: { id: '', title: {}, body: {}, illustration: 'baobi', published: false, category: 'conseil' } }
     : tab === 'quiz'
       ? { kind: 'quiz', v: { id: '', statement: {}, answer: true, explanation: {}, topic: '', published: false } }
       : { kind: 'chatbot', v: { id: '', message: {}, options: [{ label: {}, next: 'root' }], published: false } };
@@ -91,7 +91,7 @@ export default function Contents() {
           {items.length === 0 && <Empty title="Rien ici pour l’instant" hint="Crée un premier contenu : il restera en brouillon jusqu’à sa publication." />}
           {items.map((it) => {
             const title = it.kind === 'articles' ? tr(it.v.title) : it.kind === 'quiz' ? tr(it.v.statement) : `${it.v.id} — ${tr(it.v.message)}`;
-            const sub = it.kind === 'quiz' ? `Réponse : ${it.v.answer ? 'Vrai' : 'Faux'}${it.v.topic ? ` · ${it.v.topic}` : ''}` : it.kind === 'chatbot' ? `${it.v.options.length} bouton(s)` : tr(it.v.body).slice(0, 80);
+            const sub = it.kind === 'quiz' ? `Réponse : ${it.v.answer ? 'Vrai' : 'Faux'}${it.v.topic ? ` · ${it.v.topic}` : ''}` : it.kind === 'chatbot' ? `${it.v.options.length} bouton(s)` : `${it.v.category === 'actualite' ? 'Publication' : 'Conseil'} · ${tr(it.v.body).slice(0, 70)}`;
             const miss = missing(it.kind === 'articles' ? it.v.title : it.kind === 'quiz' ? it.v.statement : it.v.message);
             return (
               <div key={it.v.id} className="list-item" style={{ cursor: 'pointer', background: current?.v.id === it.v.id ? 'var(--cream)' : undefined }} onClick={() => setPreview(it)}>
@@ -188,7 +188,7 @@ function Editor({ item, onChange, onClose, onSaved }: { item: Item; onChange: (i
     if (item.kind === 'articles') {
       const a = v as Article;
       if (!a.title.fr?.trim()) return toast('Le titre en français est obligatoire.');
-      const row = { title: a.title, body: a.body, illustration: a.illustration, published: a.published, author_id: pro.id, updated_at: new Date().toISOString() };
+      const row = { title: a.title, body: a.body, illustration: a.illustration, category: a.category, published: a.published, author_id: pro.id, updated_at: new Date().toISOString() };
       res = a.id ? await supabase.from('articles').update(row).eq('id', a.id) : await supabase.from('articles').insert(row);
     } else if (item.kind === 'quiz') {
       const q = v as Quiz;
@@ -220,6 +220,13 @@ function Editor({ item, onChange, onClose, onSaved }: { item: Item; onChange: (i
     <Modal title={`${isNew ? 'Créer' : 'Modifier'} — ${item.kind === 'articles' ? 'fiche d’information' : item.kind === 'quiz' ? 'question Vrai ou Faux' : 'réponse du chatbot'}`} onClose={onClose}>
       {item.kind === 'articles' && (
         <>
+          <div className="field"><label>Rubrique du site</label>
+            <div className="row">
+              <button type="button" className={`btn sm ${item.v.category === 'conseil' ? '' : 'light'}`} onClick={() => set<'articles'>({ category: 'conseil' })}>Conseil santé</button>
+              <button type="button" className={`btn sm ${item.v.category === 'actualite' ? 'blue' : 'light'}`} onClick={() => set<'articles'>({ category: 'actualite' })}>Publication</button>
+            </div>
+            <span className="small muted">Une fois publiée, la fiche apparaît sur le site vitrine (rubrique {item.v.category === 'conseil' ? 'Conseils' : 'Publications'}).</span>
+          </div>
           <I18nField label="Titre" value={item.v.title} onChange={(title) => set<'articles'>({ title })} />
           <I18nField label="Texte" value={item.v.body} onChange={(body) => set<'articles'>({ body })} multiline />
           <div className="field"><label>Illustration</label>

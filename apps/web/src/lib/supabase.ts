@@ -75,6 +75,7 @@ export type Message = {
   conversation_id: string;
   sender_id: string;
   body: string | null;
+  audio_path?: string | null;
   kind: 'text' | 'audio' | 'booking_offer' | 'referral';
   payload: Record<string, unknown> | null;
   read_at: string | null;

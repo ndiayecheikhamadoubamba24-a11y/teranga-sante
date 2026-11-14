@@ -90,6 +90,11 @@ export default function Moi() {
             </View>
             <Switch value={settings.shakeToHide} onValueChange={setShakeToHide} trackColor={{ true: colors.green }} />
           </View>
+          <Pressable style={styles.setting} onPress={() => router.push('/discussion')}>
+            <Ionicons name="chatbubbles-outline" size={22} color={colors.night} />
+            <Text style={[styles.bookingText, { flex: 1 }]}>Parler à une infirmière</Text>
+            <Ionicons name="chevron-forward" size={20} color={colors.muted} />
+          </Pressable>
           <Pressable style={styles.setting} onPress={() => router.push('/discret')}>
             <Ionicons name="eye-off-outline" size={22} color={colors.night} />
             <Text style={[styles.bookingText, { flex: 1 }]}>Activer le mode discret maintenant</Text>

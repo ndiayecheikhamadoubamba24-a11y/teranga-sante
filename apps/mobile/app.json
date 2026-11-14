@@ -30,6 +30,12 @@
         {
           "locationWhenInUsePermission": "Ta position sert uniquement à afficher la distance des centres. Elle n’est jamais envoyée."
         }
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Le micro sert uniquement à envoyer des messages vocaux à l’infirmière."
+        }
       ]
     ],
     "scheme": "teranga"

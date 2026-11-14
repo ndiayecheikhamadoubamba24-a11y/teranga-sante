@@ -11,7 +11,7 @@ Application ludique et confidentielle (VIH, jeunes 18–35 ans, Sénégal).
 ## 1. Base Supabase (une seule fois)
 
 1. Dashboard Supabase → **SQL Editor** → exécuter dans l'ordre :
-   `supabase/migrations/20261114000000_init.sql`, `supabase/migrations/20261115000000_admin.sql`, puis `supabase/seed.sql` (données fictives).
+   `supabase/migrations/20261114000000_init.sql`, `20261115000000_admin.sql`, `20261116000000_chat.sql`, puis `supabase/seed.sql` (données fictives).
 2. **Authentication → Sign In / Providers** → activer **Allow anonymous sign-ins** (usagers sans compte, pseudo uniquement).
 3. **Authentication → Multi-Factor** : vérifier que **TOTP** est activé (validation en 2 étapes des professionnels).
 4. Comptes et données de démo (6 mois de rendez-vous, 14 régions, conversations, signalements) — en local, avec la clé secrète :
@@ -44,12 +44,14 @@ npx expo start         # scanner le QR avec Expo Go
 | 6 | Carte des centres (Leaflet/OSM) | `/carte` | M4 |
 | – | Réservation anonyme (code BAO-XXXX) | `/reserver/[id]` | M5 |
 | 7 | Chatbot Question sans honte | `/chatbot` | M8 |
+| – | Discussion avec une infirmière (écrit, vocal, réservation intégrée, Urgence) + choix de l'infirmière | `/discussion` | M7 (+ M6 simplifié) |
 | 8 | Rappel de traitement discret | `/traitement` | M10 |
 | 9 | Profil et progression | `/moi` | M14 |
 | 10 | Mode discret (faux écran météo, secouer) | `/discret` | M13 |
 
 - Hors ligne : quiz, chatbot et centres ont un contenu de secours (`src/data/content.ts`) si Supabase ne répond pas en 4 s.
 - Le suivi de traitement reste **uniquement sur le téléphone** (AsyncStorage).
+- Discussion (M7) : messages vocaux AAC mono 32 kb/s (≤ 60 s) dans le bucket privé `voice`, lisibles uniquement par les participants ; bouton Urgence = conversation prioritaire chez l'infirmière + appel SAMU (1515) ; après un échange, l'app propose de réserver, et après une réservation, d'écrire à l'infirmière.
 - Mode discret : secouer le téléphone → faux écran météo ; appui long sur la température pour revenir.
 - Wolof et pulaar : structure prête dans `src/lib/i18n.ts`, traductions à fournir par des locuteurs natifs.
 

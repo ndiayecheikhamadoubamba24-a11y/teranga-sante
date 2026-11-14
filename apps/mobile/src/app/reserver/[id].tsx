@@ -93,7 +93,7 @@ export default function Reserver() {
           <Text style={styles.doneHint}>Ton rappel s’affichera comme « Rendez-vous bien-être ».</Text>
         </View>
         <View style={{ padding: spacing(5), gap: spacing(3) }}>
-          <Button label="Écrire à l’infirmière" icon="chatbubbles" onPress={() => router.push('/chatbot')} />
+          <Button label="Écrire à l’infirmière" icon="chatbubbles" onPress={() => router.push({ pathname: '/discussion', params: { topic: SERVICES.find((x) => x.id === service)?.label === 'PrEP' ? 'PrEP' : 'Dépistage' } })} />
           <Button label="Terminé" variant="light" small onPress={() => router.replace('/accueil')} />
           <PrivacyNote text="Aucun nom, aucun numéro demandé" />
         </View>

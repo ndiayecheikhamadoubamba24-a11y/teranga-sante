@@ -8,6 +8,15 @@ import { fmtTime, LANG_LABEL, SERVICE_LABEL, timeAgo } from '../lib/format';
 import { logAction, supabase, type Conversation, type Message, type Service } from '../lib/supabase';
 import { useRealtime } from '../lib/useRealtime';
 
+/** Message vocal du jeune (bucket privé, URL signée d'une heure). */
+function VoiceNote({ path }: { path: string }) {
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    supabase.storage.from('voice').createSignedUrl(path, 3600).then(({ data }) => setUrl(data?.signedUrl ?? null));
+  }, [path]);
+  return url ? <audio controls preload="none" src={url} style={{ height: 36, maxWidth: 260 }} aria-label="Message vocal" /> : <span className="muted small">🎤 Chargement du vocal…</span>;
+}
+
 type ConvRow = Conversation & { last?: string; unread?: number };
 type FreeSlot = { id: string; starts_at: string; service: Service; remaining: number };
 type CentreRow = { id: string; name: string; district: string | null };
@@ -35,14 +44,14 @@ export default function Messages() {
   const loadConvs = useCallback(async () => {
     const { data } = await supabase
       .from('conversations')
-      .select('*, messages(body, sender_id, read_at, created_at)')
+      .select('*, messages(body, kind, sender_id, read_at, created_at)')
       .or(`nurse_id.eq.${pro.id},nurse_id.is.null`)
       .order('last_message_at', { ascending: false })
       .limit(50);
-    type Raw = Conversation & { messages: Pick<Message, 'body' | 'sender_id' | 'read_at' | 'created_at'>[] };
+    type Raw = Conversation & { messages: Pick<Message, 'body' | 'kind' | 'sender_id' | 'read_at' | 'created_at'>[] };
     const rows = ((data as Raw[]) ?? []).map(({ messages, ...c }) => {
       const sorted = [...messages].sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
-      return { ...c, last: sorted[0]?.body ?? '', unread: messages.filter((m) => !m.read_at && m.sender_id !== pro.id).length };
+      return { ...c, last: sorted[0] ? (sorted[0].kind === 'audio' ? '🎤 Message vocal' : sorted[0].body ?? '') : '', unread: messages.filter((m) => !m.read_at && m.sender_id !== pro.id).length };
     });
     // Priorité : urgent, puis non lus, puis récents.
     rows.sort((a, b) => Number(b.urgent && !b.closed) - Number(a.urgent && !a.closed) || Number(a.closed) - Number(b.closed) || (b.unread ?? 0) - (a.unread ?? 0) || (a.last_message_at < b.last_message_at ? 1 : -1));
@@ -56,7 +65,7 @@ export default function Messages() {
     setMsgs((data as Message[]) ?? []);
     const unread = ((data as Message[]) ?? []).filter((m) => !m.read_at && m.sender_id !== pro.id).map((m) => m.id);
     if (unread.length) {
-      await supabase.from('messages').update({ read_at: new Date().toISOString() }).in('id', unread);
+      await supabase.rpc('mark_read', { p_conversation_id: activeId });
       loadConvs();
     }
     const { data: hb } = await supabase.rpc('conversation_has_booking', { p_conversation_id: activeId });
@@ -154,7 +163,7 @@ export default function Messages() {
                       <div style={{ background: mine ? 'var(--green-light)' : 'var(--white)', border: `1px solid ${mine ? '#bfe0bb' : 'var(--border)'}`, borderRadius: 16, padding: '10px 14px', whiteSpace: 'pre-wrap' }}>
                         {m.kind === 'booking_offer' && <div className="small" style={{ fontWeight: 700, color: 'var(--green)' }}><CalendarPlus size={13} /> Proposition de rendez-vous</div>}
                         {m.kind === 'referral' && <div className="small" style={{ fontWeight: 700, color: 'var(--blue)' }}><Share2 size={13} /> Orientation</div>}
-                        {m.body}
+                        {m.kind === 'audio' && m.audio_path ? <VoiceNote path={m.audio_path} /> : m.body}
                       </div>
                       <div className="small muted" style={{ textAlign: mine ? 'right' : 'left', marginTop: 2 }}>{fmtTime(m.created_at)}{mine && m.read_at ? ' · lu' : ''}</div>
                     </div>

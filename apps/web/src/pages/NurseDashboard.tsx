@@ -51,9 +51,12 @@ export default function NurseDashboard() {
 
     const list = (c.data as Conversation[]) ?? [];
     const lasts = await Promise.all(
-      list.map((cv) => supabase.from('messages').select('body').eq('conversation_id', cv.id).order('created_at', { ascending: false }).limit(1).maybeSingle()),
+      list.map((cv) => supabase.from('messages').select('body, kind').eq('conversation_id', cv.id).order('created_at', { ascending: false }).limit(1).maybeSingle()),
     );
-    setConvs(list.map((cv, i) => ({ ...cv, last: (lasts[i].data as { body: string | null } | null)?.body ?? '' })));
+    setConvs(list.map((cv, i) => {
+      const l = lasts[i].data as { body: string | null; kind: string } | null;
+      return { ...cv, last: l?.kind === 'audio' ? '🎤 Message vocal' : l?.body ?? '' };
+    }));
   }, [pro.centre_id, pro.id]);
 
   useEffect(() => {

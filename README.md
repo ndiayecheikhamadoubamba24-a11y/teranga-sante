@@ -13,7 +13,7 @@ Application ludique et confidentielle (VIH, jeunes 18–35 ans, Sénégal).
 1. Dashboard Supabase → **SQL Editor** → exécuter dans l'ordre :
    `supabase/migrations/20261114000000_init.sql`, `20261115000000_admin.sql`, `20261116000000_chat.sql`,
    `20261117000000_super_admin_role.sql` **(seul, puis cliquer Run)**, `20261117000100_super_admin.sql`, `20261118000000_temp_password.sql`,
-   `20261119000000_site.sql`, `20261120000000_team.sql`, `20261121000000_nurses.sql`, `20261122000000_ai.sql`, puis `supabase/seed.sql` (données fictives).
+   `20261119000000_site.sql`, `20261120000000_team.sql`, `20261121000000_nurses.sql`, `20261122000000_ai.sql`, `20261123000000_nurse_phone.sql`, puis `supabase/seed.sql` (données fictives).
 2. **Authentication → Sign In / Providers** → activer **Allow anonymous sign-ins** (usagers sans compte, pseudo uniquement).
 3. Comptes et données de démo (6 mois de rendez-vous, 14 régions, conversations, signalements) — en local, avec la clé secrète :
    ```bash
@@ -108,7 +108,7 @@ npx expo start         # scanner le QR avec Expo Go
 | 6 | Carte des centres (Leaflet/OSM) | `/carte` | M4 |
 | – | Réservation anonyme (code BAO-XXXX) | `/reserver/[id]` | M5 |
 | 7 | Chatbot Question sans honte | `/chatbot` | M8 |
-| – | Infirmières : liste (filtres en ligne / langue / centre) et profil (Poser une question, Réserver, Appeler le centre) | `/infirmieres`, `/infirmieres/[id]` | M6 |
+| – | Infirmières : postes de santé les plus proches (géolocalisation sur le téléphone) → page du poste avec les infirmières disponibles et leur numéro professionnel (Appeler / Écrire / Profil) | `/infirmieres`, `/postes/[id]`, `/infirmieres/[id]` | M6 |
 | – | Discussion avec une infirmière (écrit, vocal, réservation intégrée, Urgence) | `/discussion` | M7 |
 | 8 | Rappel de traitement discret | `/traitement` | M10 |
 | 9 | Profil et progression | `/moi` | M14 |
@@ -116,6 +116,9 @@ npx expo start         # scanner le QR avec Expo Go
 
 - Hors ligne : quiz, chatbot et centres ont un contenu de secours (`src/data/content.ts`) si Supabase ne répond pas en 4 s.
 - Le suivi de traitement reste **uniquement sur le téléphone** (AsyncStorage).
+- Réservation : 1. poste de santé (le plus proche par défaut, modifiable) → 2. service → 3. créneau → 4. confirmation.
+- Numéro des infirmières : numéro **professionnel** saisi par l'infirmière (Profil) ou son responsable (Équipe), affiché
+  seulement quand elle est disponible. Avant un appel, l'app prévient que le numéro du jeune sera visible (écrire reste anonyme).
 - Discussion (M7) : messages vocaux AAC mono 32 kb/s (≤ 60 s) dans le bucket privé `voice`, lisibles uniquement par les participants ; bouton Urgence = conversation prioritaire chez l'infirmière + appel SAMU (1515) ; après un échange, l'app propose de réserver, et après une réservation, d'écrire à l'infirmière.
 - Mode discret : secouer le téléphone → faux écran météo ; garder le doigt **3 secondes** sur la température pour revenir.
 - Wolof et pulaar : structure prête dans `src/lib/i18n.ts`, traductions à fournir par des locuteurs natifs.

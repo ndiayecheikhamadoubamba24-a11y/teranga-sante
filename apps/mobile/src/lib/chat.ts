@@ -2,7 +2,7 @@ import { supabase, withTimeout } from './supabase';
 
 export type ProStatus = 'online' | 'busy' | 'away';
 export type Nurse = {
-  id: string; display_name: string; specialty: string | null; bio: string | null; languages: string[]; status: ProStatus;
+  id: string; display_name: string; specialty: string | null; bio: string | null; languages: string[]; status: ProStatus; phone: string | null;
   centre_id: string | null; centre_name: string | null; centre_district: string | null; centre_phone: string | null; region_id: number | null;
 };
 export type Conversation = { id: string; nurse_id: string | null; alias: string | null; topic: string | null; urgent: boolean; closed: boolean; last_message_at: string };

@@ -1,12 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Baobi } from '../../components/Baobi';
 import { Bubble, Button, Chip, Header, PrivacyNote, tap } from '../../components/ui';
-import { CENTRES, type Centre } from '../../data/content';
-import { loadCentres } from '../../lib/geo';
+import { CENTRES, hoursText, todayHours, type Centre } from '../../data/content';
+import { byDistance, distanceKm, formatKm, loadCentres, useMyLocation } from '../../lib/geo';
 import { getSyncError, useStore } from '../../lib/store';
 import { supabase } from '../../lib/supabase';
 import { colors, fonts, radius, shadow, spacing } from '../../theme';
@@ -30,6 +30,9 @@ export default function Reserver() {
   const [onlyNurse, setOnlyNurse] = useState(!!nurse);
   const { syncNow, saveBooking } = useStore();
   const [centre, setCentre] = useState<Centre | undefined>(CENTRES.find((c) => c.id === id));
+  const [allCentres, setAllCentres] = useState<Centre[]>([]);
+  const [picker, setPicker] = useState(false);
+  const me = useMyLocation();
   const [service, setService] = useState<string>('screening');
   const [slots, setSlots] = useState<Slot[] | null>(null);
   const [day, setDay] = useState<string | null>(null);
@@ -53,7 +56,10 @@ export default function Reserver() {
   }, [id, syncNow]);
 
   useEffect(() => {
-    loadCentres().then((all) => setCentre(all.find((c) => c.id === id)));
+    loadCentres().then((all) => {
+      setAllCentres(all);
+      setCentre(all.find((c) => c.id === id));
+    });
     load();
   }, [id, load]);
 
@@ -116,14 +122,28 @@ export default function Reserver() {
           <Bubble style={{ flex: 1 }}>Pas besoin de ton nom : tu recevras un code secret 🔒</Bubble>
         </View>
 
-        <Text style={styles.step}>1. Service</Text>
+        <Text style={styles.step}>1. Poste de santé</Text>
+        <Pressable style={styles.poste} onPress={() => { tap(); setPicker(true); }} accessibilityRole="button" accessibilityLabel="Choisir le poste de santé">
+          <View style={styles.posteIcon}><Ionicons name="medkit" size={22} color={colors.white} /></View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.posteName} numberOfLines={2}>{centre?.name ?? 'Choisis un poste'}</Text>
+            {centre && (
+              <Text style={styles.posteMeta}>
+                {me ? `${formatKm(distanceKm(me, centre))} · ` : ''}{hoursText(todayHours(centre))}
+              </Text>
+            )}
+          </View>
+          <Text style={styles.posteChange}>Changer</Text>
+        </Pressable>
+
+        <Text style={styles.step}>2. Service</Text>
         <View style={styles.row}>
           {SERVICES.map((s) => (
             <Chip key={s.id} label={s.label} active={service === s.id} onPress={() => { setService(s.id); setSlot(null); }} />
           ))}
         </View>
 
-        <Text style={styles.step}>2. Créneau</Text>
+        <Text style={styles.step}>3. Créneau</Text>
         {nurse && (
           <View style={styles.row}>
             <Chip label={`Avec ${nurseName ?? 'elle'}`} active={onlyNurse} onPress={() => { setOnlyNurse(true); setSlot(null); }} />
@@ -167,8 +187,43 @@ export default function Reserver() {
         {error && <Button label="Réessayer" variant="light" small icon="refresh" onPress={load} />}
       </ScrollView>
       <View style={{ padding: spacing(5) }}>
-        <Button label={busy ? 'Réservation…' : '3. Confirmer'} icon="checkmark-circle" disabled={!slot || busy} onPress={confirm} />
+        <Button label={busy ? 'Réservation…' : '4. Confirmer'} icon="checkmark-circle" disabled={!slot || busy} onPress={confirm} />
       </View>
+      <Modal visible={picker} transparent animationType="slide" onRequestClose={() => setPicker(false)}>
+        <Pressable style={styles.modalBack} onPress={() => setPicker(false)}>
+          <Pressable style={styles.modal} onPress={() => {}}>
+            <Text style={styles.modalTitle}>{me ? 'Postes de santé les plus proches' : 'Choisis ton poste de santé'}</Text>
+            <ScrollView contentContainerStyle={{ gap: spacing(2) }}>
+              {byDistance(allCentres, me).map((c, i) => {
+                const h = todayHours(c);
+                return (
+                  <Pressable
+                    key={c.id}
+                    style={[styles.modalItem, c.id === id && { borderColor: colors.green }]}
+                    onPress={() => {
+                      tap();
+                      setPicker(false);
+                      setSlot(null);
+                      setDay(null);
+                      setOnlyNurse(false);
+                      router.setParams({ id: c.id, nurse: '', nurseName: '' });
+                    }}
+                  >
+                    <View style={[styles.posteIcon, { width: 38, height: 38 }]}><Ionicons name="medkit" size={18} color={colors.white} /></View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.posteName} numberOfLines={2}>{c.name}</Text>
+                      <Text style={styles.posteMeta}>
+                        {c.km != null ? `${formatKm(c.km)} · ` : ''}{h.open ? 'Ouvert' : 'Fermé'}{me && i === 0 ? ' · le plus proche' : ''}
+                      </Text>
+                    </View>
+                    {c.id === id && <Ionicons name="checkmark-circle" size={22} color={colors.green} />}
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -176,6 +231,15 @@ export default function Reserver() {
 const styles = StyleSheet.create({
   content: { padding: spacing(5), paddingTop: spacing(2), gap: spacing(3) },
   hero: { flexDirection: 'row', alignItems: 'center', gap: spacing(2) },
+  poste: { flexDirection: 'row', alignItems: 'center', gap: spacing(3), backgroundColor: colors.white, borderRadius: radius.lg, padding: spacing(3), borderWidth: 2, borderColor: colors.green, ...shadow },
+  posteIcon: { width: 44, height: 44, borderRadius: 14, backgroundColor: colors.green, alignItems: 'center', justifyContent: 'center' },
+  posteName: { fontFamily: fonts.bold, fontSize: 15, color: colors.night },
+  posteMeta: { fontFamily: fonts.regular, fontSize: 12, color: colors.muted },
+  posteChange: { fontFamily: fonts.bold, fontSize: 13, color: colors.green },
+  modalBack: { flex: 1, backgroundColor: 'rgba(20,33,61,0.45)', justifyContent: 'flex-end' },
+  modal: { backgroundColor: colors.cream, borderTopLeftRadius: radius.lg, borderTopRightRadius: radius.lg, padding: spacing(4), maxHeight: '80%', gap: spacing(2) },
+  modalTitle: { fontFamily: fonts.bold, fontSize: 18, color: colors.night, marginBottom: spacing(1) },
+  modalItem: { flexDirection: 'row', alignItems: 'center', gap: spacing(3), backgroundColor: colors.white, borderRadius: radius.md, padding: spacing(3), borderWidth: 2, borderColor: 'transparent' },
   step: { fontFamily: fonts.bold, fontSize: 16, color: colors.night, marginTop: spacing(2) },
   row: { flexDirection: 'row', gap: spacing(2), flexWrap: 'wrap' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing(3), marginTop: spacing(2) },

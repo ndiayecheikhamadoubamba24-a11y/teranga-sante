@@ -109,7 +109,7 @@ export default function Carte() {
           </View>
           <Button label="Réserver anonymement" onPress={() => router.push({ pathname: '/reserver/[id]', params: { id: selected.id } })} />
           <View style={{ flexDirection: 'row', gap: spacing(2), marginTop: spacing(2) }}>
-            <Button label="Infirmières" icon="people-outline" variant="light" small onPress={() => router.push({ pathname: '/infirmieres', params: { centre: selected.id } })} style={{ flex: 1 }} />
+            <Button label="Infirmières" icon="people-outline" variant="light" small onPress={() => router.push({ pathname: '/postes/[id]', params: { id: selected.id } })} style={{ flex: 1 }} />
             <Button label="Itinéraire" icon="navigate-outline" variant="light" small onPress={() => itinerary(selected)} style={{ flex: 1 }} />
           </View>
         </View>

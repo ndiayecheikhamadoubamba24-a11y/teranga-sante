@@ -5,6 +5,7 @@ import { ActivityIndicator, Alert, Linking, Pressable, ScrollView, StyleSheet, T
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LANG_NAME, NURSE_STATUS, NurseAvatar } from '../../components/NurseAvatar';
 import { Button, Header, PrivacyNote, tap } from '../../components/ui';
+import { callWithWarning } from '../../lib/call';
 import { todayHours, type Centre } from '../../data/content';
 import { loadNurses, loadOpenConversation, myUserId, type Nurse } from '../../lib/chat';
 import { loadCentres } from '../../lib/geo';
@@ -66,12 +67,12 @@ export default function InfirmiereProfil() {
     router.push({ pathname: '/reserver/[id]', params: { id: nurse.centre_id, nurse: nurse.id, nurseName: nurse.display_name } });
   }
 
+  // Numéro professionnel de l'infirmière si elle l'a renseigné et qu'elle est disponible, sinon l'accueil du poste.
+  const callNumber = nurse && nurse.status !== 'away' && nurse.phone ? nurse.phone : nurse?.centre_phone ?? null;
   function call() {
-    if (!nurse?.centre_phone) return;
-    Alert.alert('Appeler le centre', `Tu vas appeler ${nurse.centre_name} au ${nurse.centre_phone}. Demande ${nurse.display_name} à l’accueil — inutile de donner ton nom.`, [
-      { text: 'Appeler', onPress: () => Linking.openURL(`tel:${nurse.centre_phone!.replace(/\s/g, '')}`) },
-      { text: 'Annuler', style: 'cancel' },
-    ]);
+    if (!nurse || !callNumber) return;
+    const who = callNumber === nurse.phone ? nurse.display_name : `${nurse.centre_name} (demande ${nurse.display_name})`;
+    callWithWarning(who, callNumber, ask);
   }
 
   if (nurse === undefined) return <SafeAreaView style={styles.center}><ActivityIndicator color={colors.green} /></SafeAreaView>;
@@ -116,9 +117,9 @@ export default function InfirmiereProfil() {
           <Button label="Poser une question" icon="chatbubbles" onPress={ask} />
           <View style={{ flexDirection: 'row', gap: spacing(3) }}>
             <Button label="Réserver" icon="calendar" variant="orange" onPress={reserve} disabled={!nurse.centre_id} style={{ flex: 1 }} />
-            <Button label="Appeler" icon="call" variant="light" onPress={call} disabled={!nurse.centre_phone} style={{ flex: 1 }} />
+            <Button label="Appeler" icon="call" variant="light" onPress={call} disabled={!callNumber} style={{ flex: 1 }} />
           </View>
-          {!nurse.centre_phone && <Text style={[styles.muted, { textAlign: 'center' }]}>Le numéro du centre n’est pas encore renseigné.</Text>}
+          {callNumber ? <Text style={[styles.muted, { textAlign: 'center' }]}>📞 {callNumber}</Text> : <Text style={[styles.muted, { textAlign: 'center' }]}>Aucun numéro renseigné pour le moment : écris-lui dans l’app.</Text>}
         </View>
 
         <View style={styles.card}>

@@ -39,6 +39,8 @@ export type Pro = {
   specialty: string | null;
   /** Présentation affichée aux jeunes (M6). */
   bio?: string | null;
+  /** Numéro professionnel affiché aux jeunes sur la page du poste (facultatif). */
+  phone?: string | null;
   languages: Lang[];
   status: ProStatus;
   /** Mot de passe provisoire donné par le super admin : à changer avant tout accès. */

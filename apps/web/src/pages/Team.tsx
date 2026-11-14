@@ -91,7 +91,7 @@ export default function Team() {
   const canManage = (m: Stat) => m.role === 'nurse' && m.id !== me.id;
   const member = (id: string) => {
     const m = stats?.find((x) => x.id === id);
-    return m ? { id: m.id, display_name: m.display_name, specialty: m.specialty, email: accounts.get(id)?.email ?? null } : null;
+    return m ? { id: m.id, display_name: m.display_name, specialty: m.specialty, phone: (accounts.get(id) as { phone?: string | null } | undefined)?.phone ?? null, email: accounts.get(id)?.email ?? null } : null;
   };
 
   async function toggle(m: Stat, disabled: boolean) {

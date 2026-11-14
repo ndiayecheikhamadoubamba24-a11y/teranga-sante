@@ -4,7 +4,7 @@ import { manageUsers } from '../lib/manageUsers';
 import { CredentialsCard, generatePassword, passwordProblem, TempPasswordField } from './credentials';
 import { Modal, useToast } from './ui';
 
-type Member = { id: string; display_name: string; specialty: string | null; email: string | null };
+type Member = { id: string; display_name: string; specialty: string | null; email: string | null; phone?: string | null };
 
 /**
  * Création ou modification d'une infirmière. Le serveur impose le centre :
@@ -17,6 +17,7 @@ export function NurseModal({ member, centreId, centreName, onClose, onSaved }: {
   const [email, setEmail] = useState('');
   const [name, setName] = useState(member?.display_name ?? '');
   const [specialty, setSpecialty] = useState(member?.specialty ?? '');
+  const [phone, setPhone] = useState(member?.phone ?? '');
   const [password, setPassword] = useState(() => generatePassword());
   const [busy, setBusy] = useState(false);
   const [created, setCreated] = useState(false);
@@ -26,11 +27,11 @@ export function NurseModal({ member, centreId, centreName, onClose, onSaved }: {
     setBusy(true);
     try {
       if (member) {
-        await manageUsers({ action: 'update', id: member.id, display_name: name, specialty });
+        await manageUsers({ action: 'update', id: member.id, display_name: name, specialty, phone });
         toast('Fiche mise à jour');
         onSaved();
       } else {
-        await manageUsers({ action: 'create', email: email.trim().toLowerCase(), password, display_name: name, specialty, role: 'nurse', centre_id: centreId });
+        await manageUsers({ action: 'create', email: email.trim().toLowerCase(), password, display_name: name, specialty, phone, role: 'nurse', centre_id: centreId });
         setCreated(true);
       }
     } catch (e) {
@@ -52,6 +53,7 @@ export function NurseModal({ member, centreId, centreName, onClose, onSaved }: {
     <Modal title={member ? `Modifier ${member.display_name}` : `Nouvelle infirmière · ${centreName}`} onClose={onClose}>
       {!member && <div className="field"><label htmlFor="nm-e">Email professionnel</label><input id="nm-e" className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} /></div>}
       <div className="field"><label htmlFor="nm-n">Nom affiché aux jeunes</label><input id="nm-n" className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="ex : Awa Diop" /></div>
+      <div className="field"><label htmlFor="nm-t">Numéro professionnel (facultatif)</label><input id="nm-t" className="input" type="tel" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="ex : 77 123 45 67" /><span className="small muted">Affiché aux jeunes sur la page du poste quand l’infirmière est disponible.</span></div>
       <div className="field"><label htmlFor="nm-s">Spécialité</label><input id="nm-s" className="input" value={specialty} onChange={(e) => setSpecialty(e.target.value)} placeholder="ex : Dépistage et PrEP" /></div>
       {!member && <TempPasswordField value={password} onChange={setPassword} id="nm-p" />}
       <button className="btn lg" disabled={busy || !valid} onClick={save}>{member ? 'Enregistrer' : <><UserPlus size={18} /> Créer le compte</>}</button>

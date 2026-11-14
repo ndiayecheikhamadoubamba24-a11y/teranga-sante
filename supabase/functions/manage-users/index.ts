@@ -37,6 +37,8 @@ Deno.serve(async (req) => {
   // Le compte est confirmé d'office ; la personne devra choisir son propre mot de passe à la 1re connexion.
   if (action === 'create') {
     const { email, password, display_name, specialty } = body;
+    const phone = typeof body.phone === 'string' && body.phone.trim() ? body.phone.trim() : null;
+    if (phone && !/^[0-9 +().-]{7,20}$/.test(phone)) return json({ error: 'numéro invalide' }, 400);
     let role: string = body.role ?? 'nurse';
     let centre_id: string | null = body.centre_id ?? null;
     if (!isSuper) {
@@ -56,7 +58,7 @@ Deno.serve(async (req) => {
       return json({ error: msg }, 400);
     }
     const { error: e2 } = await admin.from('pros').upsert({
-      id: created.user.id, role, centre_id, display_name: display_name.trim(), specialty: specialty || null, languages: ['fr'], status: 'away',
+      id: created.user.id, role, centre_id, display_name: display_name.trim(), specialty: specialty || null, phone, languages: ['fr'], status: 'away',
     });
     if (e2) {
       await admin.auth.admin.deleteUser(created.user.id);
@@ -115,6 +117,11 @@ Deno.serve(async (req) => {
     const patch: Record<string, unknown> = {};
     if (body.display_name) patch.display_name = String(body.display_name).trim();
     if ('specialty' in body) patch.specialty = body.specialty || null;
+    if ('phone' in body) {
+      const phone = typeof body.phone === 'string' && body.phone.trim() ? body.phone.trim() : null;
+      if (phone && !/^[0-9 +().-]{7,20}$/.test(phone)) return json({ error: 'numéro invalide' }, 400);
+      patch.phone = phone;
+    }
     if (body.role && !isSuper && body.role !== target.role) return json({ error: 'seul le super admin peut changer un rôle' }, 403);
     if ('centre_id' in body && !isSuper && body.centre_id !== target.centre_id) return json({ error: 'seul le super admin peut changer le centre' }, 403);
     if (body.role && isSuper) {

@@ -128,3 +128,6 @@ export function todayHours(c: Centre, now = new Date()): { label: string; open: 
   const fmt = (x: string) => x.replace(/^0/, '').replace(':00', 'h').replace(':', 'h');
   return { label: `${fmt(h[0])} – ${fmt(h[1])}`, open: hm >= toMin(h[0]) && hm < toMin(h[1]) };
 }
+
+// « Ouvert · 8h – 18h » / « Fermé · 8h – 18h » / « Fermé aujourd’hui »
+export const hoursText = (h: { open: boolean; label: string }) => (h.label.startsWith('Fermé') ? h.label : `${h.open ? 'Ouvert' : 'Fermé'} · ${h.label}`);

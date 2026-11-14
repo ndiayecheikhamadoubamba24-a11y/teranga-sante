@@ -13,6 +13,7 @@ export default function Profile() {
   const [name, setName] = useState(pro.display_name);
   const [specialty, setSpecialty] = useState(pro.specialty ?? '');
   const [bio, setBio] = useState(pro.bio ?? '');
+  const [phone, setPhone] = useState(pro.phone ?? '');
   const [langs, setLangs] = useState<Lang[]>(pro.languages);
 
 
@@ -31,8 +32,8 @@ export default function Profile() {
   };
 
   const save = async () => {
-    const { error } = await supabase.from('pros').update({ display_name: name.trim(), specialty: specialty || null, languages: langs, ...(pro.role === 'nurse' ? { bio: bio.trim() || null } : {}) }).eq('id', pro.id);
-    if (error) return toast(error.message);
+    const { error } = await supabase.from('pros').update({ display_name: name.trim(), specialty: specialty || null, languages: langs, ...(pro.role === 'nurse' ? { bio: bio.trim() || null, phone: phone.trim() || null } : {}) }).eq('id', pro.id);
+    if (error) return toast(/phone/.test(error.message) ? 'Numéro invalide : chiffres, espaces et + uniquement.' : error.message);
     logAction('profile.update', 'pros', pro.id);
     await refresh();
     toast('Profil enregistré');
@@ -52,6 +53,13 @@ export default function Profile() {
         </div>
         <div className="field"><label htmlFor="pn">Nom affiché aux jeunes</label><input id="pn" className="input" value={name} onChange={(e) => setName(e.target.value)} /></div>
         {pro.role === 'nurse' && <div className="field"><label htmlFor="ps">Spécialité</label><input id="ps" className="input" value={specialty} onChange={(e) => setSpecialty(e.target.value)} /></div>}
+        {pro.role === 'nurse' && (
+          <div className="field">
+            <label htmlFor="pp">Numéro professionnel (visible par les jeunes quand tu es disponible)</label>
+            <input id="pp" className="input" type="tel" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="ex : 77 123 45 67 — laisser vide pour ne pas l’afficher" />
+            <span className="small muted">Affiché sur la page de ton poste de santé dans l’application, uniquement quand ton statut est « En ligne » ou « Occupée ».</span>
+          </div>
+        )}
         {pro.role === 'nurse' && (
           <div className="field">
             <label htmlFor="pb">À propos (visible par les jeunes dans l’application)</label>

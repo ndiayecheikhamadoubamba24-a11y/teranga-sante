@@ -34,9 +34,9 @@ export function SiteLayout({ children, title, description, type, noindex }: { ch
             <Link to="/#application">L’application</Link>
             <Link to="/#professionnels">Professionnels</Link>
             {loggedIn ? (
-              <Link to={HOME_BY_ROLE[pro!.role]} className="btn sm"><UserRound size={16} /> Mon espace</Link>
+              <Link to={HOME_BY_ROLE[pro!.role]} className="s-btn secondary sm"><UserRound size={16} strokeWidth={1.75} aria-hidden="true" /> Mon espace</Link>
             ) : (
-              <Link to="/connexion" className="btn sm"><LogIn size={16} /> Se connecter</Link>
+              <Link to="/connexion" className="s-btn secondary sm"><LogIn size={16} strokeWidth={1.75} aria-hidden="true" /> Se connecter</Link>
             )}
           </nav>
           <button className="icon-btn site-burger" onClick={() => setOpen(!open)} aria-label={open ? 'Fermer le menu' : 'Ouvrir le menu'} aria-expanded={open}>

@@ -1,0 +1,87 @@
+/* Accueil du site vitrine — passe « unslop » (méthode de Damir Sokolovsky, @heydamir, CC BY 4.0).
+   Grille de 4 px, surfaces sable neutres, vert de la marque comme seul accent,
+   une seule courbe d'animation. Variables --s-* : définies sur .site (index.css). */
+
+.lp h1, .lp h2, .lp h3 { color: var(--s-text); }
+
+/* ---------- Héros ---------- */
+.lp-hero { min-height: min(720px, calc(100svh - 72px)); display: grid; align-items: center; padding: 48px 0 32px; }
+.lp-hero-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px; align-items: center; }
+.lp-hero h1 { font-size: clamp(40px, 5.2vw, 64px); line-height: 1.04; font-weight: 600; letter-spacing: -0.03em; margin: 0 0 24px; max-width: 12ch; }
+.lp-sub { font-size: 19px; line-height: 30px; color: var(--s-text-2); margin: 0 0 32px; max-width: 34rem; }
+.lp-sub.small { font-size: 16px; line-height: 26px; margin-bottom: 0; }
+.lp-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
+/* Aperçu du produit : le vrai écran de l'app + le ticket de rendez-vous (le moment de la page). */
+.lp-visual { position: relative; display: flex; justify-content: center; padding: 8px 0 40px; }
+.lp-phone { width: 272px; border-radius: 40px; padding: 8px; background: #1f1b16; box-shadow: 0 24px 48px rgba(31, 27, 22, 0.16), 0 2px 4px rgba(31, 27, 22, 0.08); }
+.lp-phone img { display: block; width: 100%; height: auto; border-radius: 32px; }
+.lp-ticket { position: absolute; left: calc(50% - 248px); bottom: 64px; width: 232px; background: #fffdf8; border-radius: 12px; overflow: hidden; box-shadow: 0 12px 32px rgba(31, 27, 22, 0.14), 0 1px 2px rgba(31, 27, 22, 0.08); }
+.lp-ticket > svg { display: block; }
+.lp-ticket-body { position: relative; display: grid; gap: 4px; padding: 16px 20px 20px; border-top: 1px dashed rgba(31, 27, 22, 0.16); }
+/* Encoches du ticket, de la couleur de la page */
+.lp-ticket-body::before, .lp-ticket-body::after { content: ''; position: absolute; top: -8px; width: 16px; height: 16px; border-radius: 50%; background: var(--s-bg); }
+.lp-ticket-body::before { left: -8px; }
+.lp-ticket-body::after { right: -8px; }
+.lp-ticket-label { font-size: 12px; line-height: 16px; color: var(--s-text-3); }
+.lp-ticket-meta { font-size: 13px; line-height: 20px; color: var(--s-text-2); }
+
+/* Signature : le code de rendez-vous, en chasse fixe, comme un tampon. */
+.lp-code { font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace; font-size: 28px; line-height: 36px; font-weight: 600; letter-spacing: 0.04em; color: var(--green-dark); font-variant-numeric: tabular-nums; }
+.lp-code.sm { align-self: flex-start; font-size: 13px; line-height: 16px; padding: 0 8px; border: 1px solid rgba(4, 71, 42, 0.32); border-radius: 4px; }
+
+/* ---------- Sections ---------- */
+.lp-section { padding: 96px 0; }
+.lp-hero + .lp-section { padding-top: 48px; }
+.lp-section.tight { padding-top: 0; }
+.lp-section.raised { background: var(--s-raised); }
+.lp-title { font-size: clamp(26px, 3vw, 32px); line-height: 1.15; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 32px; }
+.lp-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 32px; }
+.lp-head .lp-title { margin: 0; }
+.lp-link { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 500; color: var(--green-dark); transition: color 160ms var(--s-ease); }
+.lp-link:hover { color: var(--s-text); }
+.lp-empty { color: var(--s-text-3); margin: 0; }
+
+/* Trois parcours : colonnes séparées par un filet, une pastille de la couleur du bouton de l'app */
+.lp-paths { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
+.lp-path { border-top: 1px solid var(--s-line); padding-top: 24px; }
+.lp-path h3, .lp-privacy h3, .lp-steps h3 { font-size: 18px; line-height: 24px; font-weight: 600; margin: 0 0 8px; display: flex; align-items: center; gap: 8px; }
+.lp-path p, .lp-privacy p, .lp-steps p { margin: 0; font-size: 15px; line-height: 24px; color: var(--s-text-2); }
+.lp-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+
+.lp-privacy { display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px; }
+.lp-privacy > div { display: flex; flex-direction: column; gap: 12px; }
+.lp-privacy > div > svg { color: var(--s-text-3); }
+.lp-privacy h3 { margin: 0; }
+
+/* Installation : quatre étapes en ligne, numéros discrets */
+.lp-install-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 32px; margin-bottom: 40px; }
+.lp-install-head .lp-title { margin-bottom: 12px; }
+.lp-steps { counter-reset: step; list-style: none; margin: 0 0 32px; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px; }
+.lp-steps li { counter-increment: step; border-top: 1px solid var(--s-line); padding-top: 20px; }
+.lp-steps li::before { content: counter(step, decimal-leading-zero); display: block; font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace; font-size: 13px; line-height: 20px; color: var(--s-text-3); margin-bottom: 8px; font-variant-numeric: tabular-nums; }
+.lp-qr { margin: 0; background: #fff; border: 1px solid var(--s-line); border-radius: 12px; padding: 12px; text-align: center; }
+.lp-qr div { width: 144px; height: 144px; }
+.lp-qr svg { width: 100%; height: 100%; }
+.lp-qr figcaption { font-size: 13px; line-height: 20px; color: var(--s-text-2); margin-top: 8px; }
+
+.lp-pro { display: flex; align-items: center; justify-content: space-between; gap: 32px; }
+.lp-pro .lp-title { margin-bottom: 12px; }
+
+@media (max-width: 900px) {
+  .lp-hero { min-height: 0; padding: 48px 0 32px; }
+  .lp-hero-grid { grid-template-columns: 1fr; gap: 40px; }
+  .lp-hero h1 { font-size: 40px; }
+  .lp-sub { font-size: 17px; line-height: 28px; }
+  .lp-section { padding: 64px 0; }
+  .lp-paths, .lp-privacy, .lp-steps { grid-template-columns: 1fr 1fr; gap: 24px; }
+  .lp-install-head, .lp-pro { flex-direction: column; align-items: flex-start; }
+}
+@media (max-width: 560px) {
+  .lp-paths, .lp-privacy, .lp-steps { grid-template-columns: 1fr; }
+  .lp-head { flex-direction: column; gap: 8px; }
+  .lp-actions .s-btn { flex: 1 1 100%; }
+  .lp-phone { width: 232px; }
+  .lp-ticket { left: 0; bottom: 24px; width: 200px; }
+  .lp-code { font-size: 24px; line-height: 32px; }
+}

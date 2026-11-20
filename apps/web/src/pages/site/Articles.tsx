@@ -15,11 +15,9 @@ export function ArticleCard({ a, level = 'h3' }: { a: SiteArticle; level?: 'h2' 
   const H = level;
   return (
     <Link to={`/article/${a.id}`} className="site-card article-card">
-      <div className="article-thumb"><Baobi size={92} mood={mood(a.illustration)} /></div>
-      <span className={`pill ${a.category === 'conseil' ? 'good' : 'info'} no-dot`}>{LABEL[a.category]}</span>
+      <span className="card-meta">{LABEL[a.category]}{a.published_at ? ` · ${fmtLongDate(a.published_at)}` : ''}</span>
       <H className="card-title">{a.title.fr}</H>
       <p>{excerpt(a.body)}</p>
-      {a.published_at && <span className="small muted">{fmtLongDate(a.published_at)}</span>}
     </Link>
   );
 }

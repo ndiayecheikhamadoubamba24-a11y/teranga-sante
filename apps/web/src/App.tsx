@@ -22,6 +22,10 @@ const Team = lazy(() => import('./pages/Team'));
 const Landing = lazy(() => import('./pages/site/Landing'));
 const SiteArticles = lazy(() => import('./pages/site/Articles').then((m) => ({ default: m.ArticleList })));
 const SiteArticle = lazy(() => import('./pages/site/Articles').then((m) => ({ default: m.ArticlePage })));
+const LegalPages = import('./pages/site/Legal');
+const MentionsLegales = lazy(() => LegalPages.then((m) => ({ default: m.MentionsLegales })));
+const Confidentialite = lazy(() => LegalPages.then((m) => ({ default: m.Confidentialite })));
+const Cgu = lazy(() => LegalPages.then((m) => ({ default: m.Cgu })));
 const Centres = lazy(() => import('./pages/admin/Centres'));
 const Journal = lazy(() => import('./pages/admin/Journal'));
 
@@ -56,6 +60,9 @@ export default function App() {
             <Route path="/conseils" element={<Suspense fallback={null}><SiteArticles category="conseil" /></Suspense>} />
             <Route path="/publications" element={<Suspense fallback={null}><SiteArticles category="actualite" /></Suspense>} />
             <Route path="/article/:id" element={<Suspense fallback={null}><SiteArticle /></Suspense>} />
+            <Route path="/mentions-legales" element={<Suspense fallback={null}><MentionsLegales /></Suspense>} />
+            <Route path="/confidentialite" element={<Suspense fallback={null}><Confidentialite /></Suspense>} />
+            <Route path="/cgu" element={<Suspense fallback={null}><Cgu /></Suspense>} />
             {/* Espace professionnel */}
             <Route path="/connexion" element={<Login />} />
             <Route path="/espace" element={<Home />} />

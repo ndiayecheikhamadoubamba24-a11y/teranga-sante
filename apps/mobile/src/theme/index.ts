@@ -15,7 +15,7 @@ export const colors = {
   white: '#FFFFFF',
   muted: '#6B6358',
   border: '#EADFC8',
-  red: '#E53935',
+  red: '#C62828', // 5,6:1 avec du blanc (WCAG AA) ; ancien #E53935 = 4,0:1
   sky: '#5AA9E6',
   skin: '#8D5A3B',
   skinDark: '#6B4026',

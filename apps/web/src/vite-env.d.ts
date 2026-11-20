@@ -6,6 +6,8 @@ interface ImportMetaEnv {
   readonly VITE_ANDROID_URL?: string;
   /** Lien App Store. */
   readonly VITE_IOS_URL?: string;
+  /** Adresse publique du site (URL canoniques, sitemap, llms.txt), ex. https://teranga-sante.sn */
+  readonly VITE_SITE_URL?: string;
 }
 interface ImportMeta {
   readonly env: ImportMetaEnv;

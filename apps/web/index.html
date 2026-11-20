@@ -9,11 +9,58 @@
     <meta property="og:description" content="Informe-toi, trouve un centre de dépistage, réserve avec un code anonyme et discute avec une infirmière." />
     <meta property="og:image" content="/og-image.png" />
     <meta property="og:type" content="website" />
+    <meta property="og:locale" content="fr_SN" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Teranga Santé — Ta santé, sans jugement</title>
     <meta name="description" content="Informe-toi, trouve un centre de dépistage, réserve avec un code anonyme et discute avec une infirmière. Gratuit et confidentiel, pour les 18-35 ans au Sénégal." />
+    <link rel="canonical" href="__SITE_URL__/" />
+    <link rel="alternate" type="text/plain" title="Description du site pour les agents IA" href="/llms.txt" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "__SITE_URL__/#organisation",
+            "name": "Teranga Santé",
+            "url": "__SITE_URL__/",
+            "logo": "__SITE_URL__/logo.png",
+            "description": "Projet gratuit d'information, de dépistage et d'accompagnement sur le VIH et les IST pour les jeunes de 18 à 35 ans au Sénégal (Hack4VIH).",
+            "areaServed": { "@type": "Country", "name": "Sénégal" }
+          },
+          {
+            "@type": "WebSite",
+            "@id": "__SITE_URL__/#site",
+            "url": "__SITE_URL__/",
+            "name": "Teranga Santé",
+            "inLanguage": "fr",
+            "publisher": { "@id": "__SITE_URL__/#organisation" }
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
+    <noscript>
+      <main style="max-width: 760px; margin: 24px auto; padding: 0 16px; font-family: sans-serif; line-height: 1.6">
+        <h1>Teranga Santé — ta santé, sans jugement</h1>
+        <p>Teranga Santé est un projet gratuit pour les jeunes de 18 à 35 ans au Sénégal : s'informer sur le VIH et les IST, trouver un centre de dépistage, réserver un rendez-vous avec un code (sans donner son nom) et écrire à une infirmière.</p>
+        <h2>Trois parcours</h2>
+        <ul>
+          <li><strong>Je m'informe</strong> : jeu Vrai ou Faux et assistant Baobi pour poser ses questions.</li>
+          <li><strong>Je me fais dépister</strong> : centres de santé les plus proches, infirmières disponibles, réservation avec un code.</li>
+          <li><strong>Je me soigne</strong> : rappel de traitement discret, qui reste sur le téléphone.</li>
+        </ul>
+        <h2>Pages</h2>
+        <ul>
+          <li><a href="/conseils">Conseils santé</a></li>
+          <li><a href="/publications">Publications</a></li>
+          <li><a href="/mentions-legales">Mentions légales</a> · <a href="/confidentialite">Politique de confidentialité</a> · <a href="/cgu">Conditions d'utilisation</a></li>
+        </ul>
+        <p><strong>Urgence :</strong> SAMU 1515. Après un rapport à risque de moins de 72 heures, rends-toi tout de suite dans un centre de santé.</p>
+        <p>Le contenu complet des conseils est aussi disponible en texte : <a href="/llms-full.txt">/llms-full.txt</a>. Le site nécessite JavaScript pour fonctionner.</p>
+      </main>
+    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

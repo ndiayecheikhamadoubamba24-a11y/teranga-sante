@@ -5,7 +5,9 @@ import { WaxBand } from '../components/Decor';
 import { HOME_BY_ROLE } from '../components/Layout';
 import { Logo } from '../components/ui';
 import { passwordProblem } from '../components/credentials';
+import { acceptTerms, TermsCheckbox } from '../components/TermsGate';
 import { fetchPro, useAuth } from '../lib/auth';
+import { useMeta } from '../lib/meta';
 import { logAction, setRemember, supabase } from '../lib/supabase';
 
 // A1 — Connexion : identifiant professionnel (email) et mot de passe.
@@ -20,6 +22,8 @@ export default function Login() {
   const [busy, setBusy] = useState(false);
   const [newPw, setNewPw] = useState('');
   const [confirmPw, setConfirmPw] = useState('');
+  const [terms, setTerms] = useState(false);
+  useMeta({ title: 'Connexion — espace professionnel', noindex: true });
 
   const mustChange = !!(session && pro?.must_change_password);
   if (session && pro && !mustChange) return <Navigate to={HOME_BY_ROLE[pro.role]} replace />;
@@ -30,6 +34,7 @@ export default function Login() {
     const problem = passwordProblem(newPw);
     if (problem) return setError(`Mot de passe trop faible : ${problem}.`);
     if (newPw !== confirmPw) return setError('Les deux mots de passe ne sont pas identiques.');
+    if (!terms) return setError('Merci d’accepter les conditions d’utilisation.');
     setBusy(true);
     const { error: err } = await supabase.auth.updateUser({ password: newPw });
     if (err) {
@@ -42,6 +47,7 @@ export default function Login() {
       return setError('Le mot de passe n’a pas pu être changé. Réessaie.');
     }
     logAction('auth.password_changed');
+    if (pro) await acceptTerms(pro.id);
     await refresh();
     setBusy(false);
     if (pro) navigate(HOME_BY_ROLE[pro.role], { replace: true });
@@ -71,7 +77,7 @@ export default function Login() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', alignContent: 'center', gap: 16, padding: 24, background: 'var(--cream)' }}>
+    <main style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', alignContent: 'center', gap: 16, padding: 24, background: 'var(--cream)' }}>
       <Link to="/" className="link" style={{ width: 'min(920px, 100%)' }}><ArrowLeft size={14} /> Retour au site Teranga Santé</Link>
       <div className="card" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', padding: 0, overflow: 'hidden', width: 'min(920px, 100%)', minHeight: 540 }}>
         <div style={{ background: "#FEF6E1 url('/backgrounds/motifs.jpg') center bottom / cover no-repeat", display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 32, position: 'relative' }}>
@@ -104,8 +110,9 @@ export default function Login() {
                 <li style={{ color: /[A-Za-z]/.test(newPw) && /[0-9]/.test(newPw) ? 'var(--green)' : undefined }}>au moins une lettre et un chiffre</li>
                 <li style={{ color: newPw && newPw === confirmPw ? 'var(--green)' : undefined }}>les deux saisies identiques</li>
               </ul>
-              {error && <div className="banner critical small">{error}</div>}
-              <button className="btn lg" disabled={busy}>{busy ? 'Enregistrement…' : 'Enregistrer et accéder à mon compte'}</button>
+              <TermsCheckbox checked={terms} onChange={setTerms} />
+              {error && <div className="banner critical small" role="alert">{error}</div>}
+              <button className="btn lg" disabled={busy || !terms}>{busy ? 'Enregistrement…' : 'Enregistrer et accéder à mon compte'}</button>
               <button type="button" className="link" style={{ alignSelf: 'center' }} onClick={() => supabase.auth.signOut()}>Ce n’est pas moi</button>
             </form>
           ) : (
@@ -122,7 +129,7 @@ export default function Login() {
             <label className="row small" style={{ fontWeight: 500 }}>
               <input type="checkbox" checked={remember} onChange={(e) => setRememberState(e.target.checked)} /> Se souvenir de moi
             </label>
-            {error && <div className="banner critical small">{error}</div>}
+            {error && <div className="banner critical small" role="alert">{error}</div>}
             <button className="btn lg" disabled={busy}>{busy ? 'Connexion…' : 'Se connecter'}</button>
             <div className="row small" style={{ justifyContent: 'center', fontWeight: 600 }}>
               <ShieldCheck size={16} color="var(--green)" /> Accès sécurisé et traçable
@@ -131,6 +138,11 @@ export default function Login() {
           )}
         </div>
       </div>
-    </div>
+      <nav className="row small" aria-label="Informations légales" style={{ gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
+        <Link to="/mentions-legales" className="link">Mentions légales</Link>
+        <Link to="/confidentialite" className="link">Confidentialité</Link>
+        <Link to="/cgu" className="link">Conditions d’utilisation</Link>
+      </nav>
+    </main>
   );
 }

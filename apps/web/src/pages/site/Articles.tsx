@@ -2,6 +2,7 @@ import { ArrowLeft, Download } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Baobi } from '../../components/Baobi';
+import { SITE_URL, useJsonLd } from '../../lib/meta';
 import { excerpt, fmtLongDate, loadArticle, loadArticles, type Category, type SiteArticle } from '../../lib/site';
 import { SiteLayout } from './SiteLayout';
 
@@ -9,12 +10,14 @@ const MOODS = { baobi: 'happy', 'baobi-cheer': 'cheer', 'baobi-wave': 'wave', 'b
 const mood = (k: string | null) => MOODS[(k ?? 'baobi') as keyof typeof MOODS] ?? 'happy';
 const LABEL: Record<Category, string> = { conseil: 'Conseil santé', actualite: 'Publication' };
 
-export function ArticleCard({ a }: { a: SiteArticle }) {
+/** `level` : niveau du titre de la carte, pour garder une hiérarchie sans saut (h1 → h2 sur les listes). */
+export function ArticleCard({ a, level = 'h3' }: { a: SiteArticle; level?: 'h2' | 'h3' }) {
+  const H = level;
   return (
     <Link to={`/article/${a.id}`} className="site-card article-card">
       <div className="article-thumb"><Baobi size={92} mood={mood(a.illustration)} /></div>
       <span className={`pill ${a.category === 'conseil' ? 'good' : 'info'} no-dot`}>{LABEL[a.category]}</span>
-      <h3>{a.title.fr}</h3>
+      <H className="card-title">{a.title.fr}</H>
       <p>{excerpt(a.body)}</p>
       {a.published_at && <span className="small muted">{fmtLongDate(a.published_at)}</span>}
     </Link>
@@ -30,7 +33,12 @@ export function ArticleList({ category }: { category: Category }) {
   }, [category]);
   const title = category === 'conseil' ? 'Conseils santé' : 'Publications';
   return (
-    <SiteLayout title={title}>
+    <SiteLayout
+      title={title}
+      description={category === 'conseil'
+        ? 'Conseils santé fiables sur le VIH, les IST, le dépistage, la PrEP et le traitement, validés par des infirmières, pour les jeunes au Sénégal.'
+        : 'Actualités de Teranga Santé, des centres de santé partenaires et de la riposte au VIH chez les jeunes au Sénégal.'}
+    >
       <section className="site-section">
         <div className="site-wrap">
           <h1 className="section-title" style={{ fontSize: 34 }}>{title}</h1>
@@ -44,7 +52,7 @@ export function ArticleList({ category }: { category: Category }) {
           ) : items.length === 0 ? (
             <div className="empty"><Baobi size={100} /><strong>Rien de publié pour le moment</strong></div>
           ) : (
-            <div className="site-grid-3">{items.map((a) => <ArticleCard key={a.id} a={a} />)}</div>
+            <div className="site-grid-3">{items.map((a) => <ArticleCard key={a.id} a={a} level="h2" />)}</div>
           )}
         </div>
       </section>
@@ -69,7 +77,7 @@ export function ArticlePage() {
   if (a === undefined) return <SiteLayout><div className="site-wrap site-section"><div className="site-card skeleton" style={{ height: 300 }} /></div></SiteLayout>;
   if (a === null) {
     return (
-      <SiteLayout title="Introuvable">
+      <SiteLayout title="Introuvable" noindex>
         <div className="site-wrap site-section empty">
           <Baobi size={120} />
           <strong>Ce contenu n’existe pas ou n’est plus publié.</strong>
@@ -81,7 +89,8 @@ export function ArticlePage() {
 
   const back = a.category === 'conseil' ? '/conseils' : '/publications';
   return (
-    <SiteLayout title={a.title.fr}>
+    <SiteLayout title={a.title.fr} description={excerpt(a.body, 155)} type="article">
+      <ArticleJsonLd a={a} />
       <article className="site-section">
         <div className="site-wrap article">
           <Link to={back} className="link"><ArrowLeft size={14} /> {a.category === 'conseil' ? 'Tous les conseils' : 'Toutes les publications'}</Link>
@@ -113,4 +122,20 @@ export function ArticlePage() {
       </article>
     </SiteLayout>
   );
+}
+
+/** Données structurées de l'article pour les moteurs et les agents IA. */
+function ArticleJsonLd({ a }: { a: SiteArticle }) {
+  useJsonLd({
+    '@context': 'https://schema.org',
+    '@type': a.category === 'conseil' ? 'MedicalWebPage' : 'NewsArticle',
+    headline: a.title.fr,
+    description: excerpt(a.body, 155),
+    inLanguage: 'fr',
+    datePublished: a.published_at ?? undefined,
+    url: `${SITE_URL}/article/${a.id}`,
+    publisher: { '@type': 'Organization', name: 'Teranga Santé', url: SITE_URL, logo: `${SITE_URL}/logo.png` },
+    ...(a.category === 'conseil' ? { audience: { '@type': 'PeopleAudience', suggestedMinAge: 18, suggestedMaxAge: 35 }, about: 'VIH et infections sexuellement transmissibles' } : {}),
+  });
+  return null;
 }

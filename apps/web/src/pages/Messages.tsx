@@ -111,6 +111,7 @@ export default function Messages() {
 
   return (
     <div className="page" style={{ paddingBottom: 20 }}>
+      <h1 className="sr-only">Messagerie</h1>
       <div className="banner warning" style={{ justifyContent: 'center' }}>
         <Lock size={16} /> <strong>Confidentialité :</strong> ne demandez pas de données personnelles (nom, numéro, adresse).
       </div>
@@ -157,7 +158,7 @@ export default function Messages() {
               </div>
               <div style={{ flex: 1, overflow: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {msgs.map((m) => {
-                  const mine = m.sender_id === pro.id || m.sender_id === active.nurse_id;
+                  const mine = m.sender_id !== active.player_id; // côté soignant (y compris un compte supprimé : sender_id null)
                   return (
                     <div key={m.id} style={{ alignSelf: mine ? 'flex-end' : 'flex-start', maxWidth: '72%' }}>
                       <div style={{ background: mine ? 'var(--green-light)' : 'var(--white)', border: `1px solid ${mine ? '#bfe0bb' : 'var(--border)'}`, borderRadius: 16, padding: '10px 14px', whiteSpace: 'pre-wrap' }}>

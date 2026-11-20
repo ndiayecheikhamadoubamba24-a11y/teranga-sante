@@ -1,15 +1,23 @@
+import { LEAFLET_CSS, LEAFLET_JS } from './leaflet-assets';
+
+// Fond de carte : tuiles raster au format {z}/{x}/{y}. Par défaut OpenStreetMap, dont la politique d'usage
+// demande une autorisation pour une application distribuée : définir EXPO_PUBLIC_TILE_URL (et
+// EXPO_PUBLIC_TILE_ATTRIBUTION) avec un fournisseur autorisé avant la publication (voir docs/CONFORMITE.md).
+const TILE_URL = process.env.EXPO_PUBLIC_TILE_URL?.trim() || 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+const TILE_ATTRIBUTION = process.env.EXPO_PUBLIC_TILE_ATTRIBUTION?.trim() || '© les contributeurs d’OpenStreetMap';
+
 export type MapPin = { id: string; lat: number; lng: number; selected?: boolean };
 export type MapProps = { pins: MapPin[]; user?: { lat: number; lng: number } | null; onSelect: (id: string) => void };
 
-// Carte Leaflet + OpenStreetMap (pas de clé API), embarquée dans une WebView / iframe.
+// Carte Leaflet (embarquée dans l'app, aucun CDN) dans une WebView / iframe.
 export const LEAFLET_HTML = `<!doctype html><html><head>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>${LEAFLET_CSS}</style>
+<script>${LEAFLET_JS}</script>
 <style>html,body,#m{margin:0;height:100%;background:#F4EEDC}.leaflet-control-attribution{font-size:9px}</style>
 </head><body><div id="m"></div><script>
 var map = L.map('m', { zoomControl: false }).setView([14.7167, -17.4677], 11);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '© OpenStreetMap' }).addTo(map);
+L.tileLayer(${JSON.stringify(TILE_URL)}, { maxZoom: 18, attribution: ${JSON.stringify(TILE_ATTRIBUTION)} }).addTo(map);
 var layer = L.layerGroup().addTo(map), me = null, first = true;
 function pin(sel){ var c = sel ? '#076236' : '#E53935', s = sel ? 44 : 36;
   return L.divIcon({ className: '', iconSize: [s, s], iconAnchor: [s/2, s],

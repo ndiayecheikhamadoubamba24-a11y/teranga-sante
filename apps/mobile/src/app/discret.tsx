@@ -64,7 +64,7 @@ export default function Discret() {
         <View style={styles.cards}>
           <View style={styles.card}>
             <Ionicons name="lock-closed" size={18} color={colors.night} />
-            <Text style={styles.cardText}>Aucune donnée{'\n'}de santé enregistrée</Text>
+            <Text style={styles.cardText}>Écran{'\n'}protégé</Text>
           </View>
           <View style={styles.card}>
             <Ionicons name="checkmark-circle" size={26} color={colors.green} />

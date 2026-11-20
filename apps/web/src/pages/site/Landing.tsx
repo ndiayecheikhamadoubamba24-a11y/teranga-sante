@@ -17,7 +17,7 @@ function PhoneMock() {
         <div style={{ marginTop: 6 }}><Logo size={64} /></div>
         <div className="phone-tiles">
           <div style={{ background: 'var(--blue)' }}><Stethoscope size={22} /><span>Je me fais dépister</span></div>
-          <div style={{ background: 'var(--orange)' }}><Gamepad2 size={22} /><span>Je joue et j’apprends</span></div>
+          <div style={{ background: 'var(--orange-strong)' }}><Gamepad2 size={22} /><span>Je joue et j’apprends</span></div>
           <div style={{ background: 'var(--green)', gridColumn: '1 / -1' }}><Pill size={22} /><span>Je me soigne</span></div>
         </div>
       </div>
@@ -65,7 +65,7 @@ export default function Landing() {
       <section className="hero">
         <div className="site-wrap hero-grid">
           <div>
-            <span className="pill good no-dot" style={{ marginBottom: 14 }}><Lock size={13} /> Anonyme · gratuit · sans jugement</span>
+            <span className="pill good no-dot" style={{ marginBottom: 14 }}><Lock size={13} aria-hidden="true" /> Sans nom · gratuit · sans jugement</span>
             <h1>Ta santé, <span style={{ color: 'var(--orange)' }}>sans jugement.</span></h1>
             <p className="lead">
               Informe-toi en jouant, trouve un centre de dépistage, réserve un créneau avec un simple code et discute avec une infirmière.
@@ -75,7 +75,7 @@ export default function Landing() {
               <a href="#application" className="btn lg" style={{ width: 'auto' }}><Download size={20} /> Installer l’application</a>
               <Link to="/conseils" className="btn light lg" style={{ width: 'auto' }}><BookOpen size={20} /> Lire les conseils</Link>
             </div>
-            <p className="small muted" style={{ marginTop: 14 }}>Disponible en français, wolof et pulaar · pour les 18 – 35 ans</p>
+            <p className="small muted" style={{ marginTop: 14 }}>En français (wolof et pulaar en cours de traduction) · pour les 18 – 35 ans</p>
           </div>
           <div className="hero-visual">
             <PhoneMock />
@@ -114,7 +114,7 @@ export default function Landing() {
               { icon: <Users />, t: 'Pas de nom', d: 'Un pseudo et un avatar suffisent. Aucun numéro de téléphone.' },
               { icon: <Hash />, t: 'Un code, pas une identité', d: 'Ta réservation est liée à un code comme BAO-4821.' },
               { icon: <EyeOff />, t: 'Mode discret', d: 'Secoue ton téléphone : un faux écran météo s’affiche.' },
-              { icon: <ShieldCheck />, t: 'Aucune donnée de santé', d: 'Ton suivi reste sur ton téléphone. Les statistiques sont anonymes.' },
+              { icon: <ShieldCheck />, t: 'Données de santé protégées', d: 'Ton suivi reste sur ton téléphone. Rendez-vous et messages ne sont vus que par les soignants concernés, et tu peux tout effacer.' },
             ].map((x) => (
               <div key={x.t} className="privacy-item">
                 <div className="privacy-icon">{x.icon}</div>
@@ -154,7 +154,7 @@ export default function Landing() {
           <div>
             <h2 className="section-title" style={{ textAlign: 'left' }}>Installer l’application</h2>
             {APP_ONLINE ? (
-              <p className="lead">Gratuite et légère (moins de 10 Mo), pensée pour les téléphones Android d’entrée de gamme.</p>
+              <p className="lead">Gratuite, pensée pour les téléphones Android d’entrée de gamme.</p>
             ) : (
               <div className="banner warning" style={{ marginBottom: 16 }}>
                 <Smartphone size={18} /> <span>L’application arrive très bientôt sur Android. Voici comment l’installer dès sa sortie :</span>
@@ -168,7 +168,7 @@ export default function Landing() {
                   : <span>Touche « Disponible sur Google Play », puis « Installer ».</span>)
                   : <span>Le lien de téléchargement apparaîtra ici.</span>}
               </li>
-              <li><strong>Ouvre Teranga Santé</strong><span>Choisis ta langue : français, wolof ou pulaar.</span></li>
+              <li><strong>Ouvre Teranga Santé</strong><span>Choisis ta langue (le wolof et le pulaar sont en cours de traduction).</span></li>
               <li><strong>Crée ton profil</strong><span>Un pseudo et un avatar, sans nom ni numéro.</span></li>
               <li><strong>C’est parti !</strong><span>Joue, trouve un centre, réserve avec un code, ou écris à une infirmière.</span></li>
             </ol>

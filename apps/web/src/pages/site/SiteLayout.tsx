@@ -1,20 +1,20 @@
-import { LogIn, Menu, Phone, UserRound, X } from 'lucide-react';
+import { LogIn, Mail, Menu, Phone, UserRound, X } from 'lucide-react';
 import { type ReactNode, useEffect, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { WaxBand } from '../../components/Decor';
 import { HOME_BY_ROLE } from '../../components/Layout';
 import { LogoInline } from '../../components/ui';
 import { useAuth } from '../../lib/auth';
+import { LEGAL } from '../../lib/legal';
+import { useMeta } from '../../lib/meta';
 
 /** Mise en page publique du site vitrine (en-tête, pied de page). */
-export function SiteLayout({ children, title }: { children: ReactNode; title?: string }) {
+export function SiteLayout({ children, title, description, type, noindex }: { children: ReactNode; title?: string; description?: string; type?: string; noindex?: boolean }) {
   const { session, pro } = useAuth();
   const [open, setOpen] = useState(false);
   const { pathname, hash } = useLocation();
 
-  useEffect(() => {
-    document.title = title ? `${title} · Teranga Santé` : 'Teranga Santé — Ta santé, sans jugement';
-  }, [title]);
+  useMeta({ title, description, type, noindex });
   useEffect(() => {
     setOpen(false);
     if (hash) document.querySelector(hash)?.scrollIntoView({ behavior: 'smooth' });
@@ -64,14 +64,18 @@ export function SiteLayout({ children, title }: { children: ReactNode; title?: s
             <Link to="/connexion">Espace professionnel</Link>
           </div>
           <div>
-            <strong>Confidentialité</strong>
-            <span>Aucun nom ni numéro demandé</span>
-            <span>Réservations avec un code anonyme</span>
-            <span>Aucune donnée de santé enregistrée</span>
+            <strong>Informations légales</strong>
+            <Link to="/mentions-legales">Mentions légales</Link>
+            <Link to="/confidentialite">Confidentialité</Link>
+            <Link to="/confidentialite#cookies">Cookies</Link>
+            <Link to="/cgu">Conditions d’utilisation</Link>
+            {LEGAL.email.startsWith('[')
+              ? <span className="row" style={{ gap: 6 }}><Mail size={16} aria-hidden="true" /> <mark>{LEGAL.email}</mark></span>
+              : <a href={`mailto:${LEGAL.email}`} className="row" style={{ gap: 6 }}><Mail size={16} aria-hidden="true" /> {LEGAL.email}</a>}
           </div>
           <div>
             <strong>Urgence</strong>
-            <a href="tel:1515" className="row" style={{ gap: 6 }}><Phone size={16} /> SAMU : 1515</a>
+            <a href="tel:1515" className="row" style={{ gap: 6 }}><Phone size={16} aria-hidden="true" /> SAMU : 1515</a>
             <span className="small" style={{ opacity: 0.8 }}>En cas de danger immédiat, appelle les secours.</span>
           </div>
         </div>

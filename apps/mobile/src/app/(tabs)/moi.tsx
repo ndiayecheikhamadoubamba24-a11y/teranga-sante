@@ -127,6 +127,14 @@ export default function Moi() {
             <Text style={[styles.bookingText, { flex: 1 }]}>Langue</Text>
             <Ionicons name="chevron-forward" size={20} color={colors.muted} />
           </Pressable>
+          <Pressable style={styles.setting} onPress={() => router.push('/confidentialite')} accessibilityRole="button">
+            <Ionicons name="shield-checkmark-outline" size={22} color={colors.night} />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.bookingText}>Mes données et confidentialité</Text>
+              <Text style={styles.bookingSub}>Ce qui est enregistré · Effacer toutes mes données</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={colors.muted} />
+          </Pressable>
         </View>
       </ScrollView>
     </SafeAreaView>

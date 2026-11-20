@@ -5,6 +5,7 @@ import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ACCESSORIES, AccessoryIcon, Avatar } from '../components/Avatar';
 import { Button, Header, tap } from '../components/ui';
+import { openLegal, SITE_URL, TERMS_VERSION } from '../lib/legal';
 import { useStore } from '../lib/store';
 import { colors, fonts, radius, shadow, spacing } from '../theme';
 
@@ -14,10 +15,13 @@ export default function Profil() {
   const [pseudo, setPseudo] = useState(player?.pseudo ?? '');
   const [face, setFace] = useState(player?.avatar.face ?? 0);
   const [accessory, setAccessory] = useState<string | null>(player?.avatar.accessory ?? null);
-  const valid = pseudo.trim().length >= 2;
+  // Acceptation des conditions : à la création du profil, puis à chaque nouvelle version (jamais pré-cochée).
+  const needsTerms = player?.termsVersion !== TERMS_VERSION;
+  const [accepted, setAccepted] = useState(false);
+  const valid = pseudo.trim().length >= 2 && (!needsTerms || accepted);
 
   const submit = async () => {
-    await createPlayer(pseudo.trim(), { face, accessory });
+    await createPlayer(pseudo.trim(), { face, accessory }, needsTerms && accepted);
     router.replace('/accueil');
   };
 
@@ -78,7 +82,38 @@ export default function Profil() {
             ))}
           </View>
 
-          <Button label={t('letsGo')} onPress={submit} disabled={!valid} style={{ marginTop: spacing(6) }} />
+          {needsTerms && (
+            <View style={styles.terms}>
+              <Pressable
+                onPress={() => { tap(); setAccepted(!accepted); }}
+                style={styles.termsRow}
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: accepted }}
+                accessibilityLabel="J’ai 18 ans ou plus et j’accepte les conditions d’utilisation"
+              >
+                <Ionicons name={accepted ? 'checkbox' : 'square-outline'} size={26} color={accepted ? colors.green : colors.night} />
+                <Text style={styles.termsText}>
+                  J’ai <Text style={styles.bold}>18 ans ou plus</Text> et j’accepte les <Text style={styles.bold}>conditions d’utilisation</Text>.
+                </Text>
+              </Pressable>
+              <Text style={styles.termsSmall}>
+                Pas de nom, pas de numéro. Si tu réserves ou écris à une infirmière, ces informations de santé sont protégées et tu
+                peux tout effacer à tout moment dans « Moi ».
+              </Text>
+              <View style={styles.termsLinks}>
+                <Pressable onPress={() => router.push('/confidentialite')} accessibilityRole="link">
+                  <Text style={styles.link}>L’essentiel sur tes données</Text>
+                </Pressable>
+                {SITE_URL ? (
+                  <Pressable onPress={() => openLegal('cgu')} accessibilityRole="link">
+                    <Text style={styles.link}>Lire les conditions</Text>
+                  </Pressable>
+                ) : null}
+              </View>
+            </View>
+          )}
+
+          <Button label={t('letsGo')} onPress={submit} disabled={!valid} style={{ marginTop: spacing(needsTerms ? 4 : 6) }} />
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -107,4 +142,11 @@ const styles = StyleSheet.create({
     borderWidth: 2, borderColor: colors.border,
   },
   accActive: { borderColor: colors.green, backgroundColor: colors.greenLight },
+  terms: { marginTop: spacing(6), backgroundColor: colors.white, borderRadius: radius.lg, padding: spacing(4), gap: spacing(2), ...shadow },
+  termsRow: { flexDirection: 'row', alignItems: 'center', gap: spacing(3), minHeight: 44 },
+  termsText: { flex: 1, fontFamily: fonts.medium, fontSize: 14, color: colors.night },
+  bold: { fontFamily: fonts.bold },
+  termsSmall: { fontFamily: fonts.regular, fontSize: 12, color: colors.muted },
+  termsLinks: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing(4) },
+  link: { fontFamily: fonts.semibold, fontSize: 13, color: colors.greenDark, textDecorationLine: 'underline', paddingVertical: spacing(1) },
 });

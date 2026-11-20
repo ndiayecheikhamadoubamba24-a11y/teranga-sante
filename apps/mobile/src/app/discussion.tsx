@@ -150,7 +150,7 @@ function Intro({ nurses, me, initialNurse, initialTopic, onStarted }: { nurses: 
       </ScrollView>
       <View style={{ padding: spacing(5), gap: spacing(2) }}>
         <Button label={busy ? 'Ouverture…' : 'Commencer la discussion'} icon="chatbubbles" disabled={busy} onPress={start} />
-        <Text style={styles.privacy}>🔒 Aucune donnée de santé n’est enregistrée sur ton profil.</Text>
+        <Text style={styles.privacy}>🔒 Seule l’infirmière lit tes messages. Tu peux tout effacer dans « Moi ».</Text>
       </View>
     </SafeAreaView>
   );

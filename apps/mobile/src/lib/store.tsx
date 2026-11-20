@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { BackgroundId } from './backgrounds';
+import { TERMS_VERSION } from './legal';
 import { translate, type I18nKey, type Lang } from './i18n';
 import { ensureAnonymousSession, supabase, withTimeout } from './supabase';
 
@@ -14,6 +15,9 @@ export type Player = {
   lastPlayed: string | null; // AAAA-MM-JJ
   badges: string[];
   gamesPlayed: number;
+  /** Version des conditions d'utilisation acceptée, et date d'acceptation. */
+  termsVersion?: string;
+  termsAcceptedAt?: string;
 };
 
 type Settings = { lang: Lang; shakeToHide: boolean; background?: BackgroundId };
@@ -28,12 +32,15 @@ type Store = {
   setLang: (l: Lang) => void;
   setShakeToHide: (v: boolean) => void;
   setBackground: (b: BackgroundId) => void;
-  createPlayer: (pseudo: string, avatar: AvatarConfig) => Promise<void>;
+  /** Crée ou modifie le profil ; `acceptTerms` enregistre l'acceptation de la version en vigueur des CGU. */
+  createPlayer: (pseudo: string, avatar: AvatarConfig, acceptTerms?: boolean) => Promise<void>;
   recordGame: (pointsWon: number, correct: number, total: number) => Promise<{ streak: number; newBadges: string[] }>;
   /** Garantit la session anonyme + la ligne `players` (nécessaire pour réserver). */
   syncNow: () => Promise<boolean>;
   bookings: LocalBooking[];
   saveBooking: (b: LocalBooking) => void;
+  /** Efface le compte sur le serveur puis toutes les données du téléphone. Renvoie un message d'erreur, ou null si tout est effacé. */
+  eraseAll: () => Promise<string | null>;
 };
 
 const KEY = 'teranga.v1';
@@ -43,7 +50,8 @@ const today = () => new Date().toISOString().slice(0, 10);
 const yesterday = () => new Date(Date.now() - 86400000).toISOString().slice(0, 10);
 
 // Le profil est d'abord local (fonctionne hors ligne), puis synchronisé vers `players`
-// via une session anonyme Supabase. Aucune donnée de santé n'est envoyée.
+// via une session anonyme Supabase (pseudo, avatar, progression : aucune donnée de santé dans ce profil ;
+// les rendez-vous et messages, eux, sont des données de santé : voir la politique de confidentialité).
 // Dernière erreur de connexion au serveur, traduite pour l'utilisateur (affichée par les écrans).
 let lastSyncError: string | null = null;
 export const getSyncError = () => lastSyncError ?? 'Connexion impossible. Vérifie ton internet puis réessaie.';
@@ -78,6 +86,8 @@ async function syncPlayer(p: Player, lang: Lang): Promise<boolean> {
       streak: p.streak,
       last_played: p.lastPlayed,
       badges: p.badges,
+      terms_version: p.termsVersion ?? null,
+      terms_accepted_at: p.termsAcceptedAt ?? null,
     }), 8000);
     lastSyncError = error ? explainError(error.message) : null;
     return !error;
@@ -111,12 +121,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [ready, settings, player, bookings]);
 
   const createPlayer = useCallback(
-    async (pseudo: string, avatar: AvatarConfig) => {
-      const p: Player = { pseudo, avatar, points: 0, streak: 0, lastPlayed: null, badges: [], gamesPlayed: 0 };
+    async (pseudo: string, avatar: AvatarConfig, acceptTerms = false) => {
+      const base: Player = player ?? { pseudo, avatar, points: 0, streak: 0, lastPlayed: null, badges: [], gamesPlayed: 0 };
+      const p: Player = { ...base, pseudo, avatar, ...(acceptTerms ? { termsVersion: TERMS_VERSION, termsAcceptedAt: new Date().toISOString() } : {}) };
       setPlayer(p);
       syncPlayer(p, settings.lang);
     },
-    [settings.lang],
+    [player, settings.lang],
   );
 
   const recordGame = useCallback(
@@ -151,6 +162,25 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       syncNow: () => (player ? syncPlayer(player, settings.lang) : Promise.resolve(false)),
       bookings,
       saveBooking: (b) => setBookings((cur) => [b, ...cur.filter((x) => x.id !== b.id)]),
+      eraseAll: async () => {
+        // 1. Sur le serveur : profil, rendez-vous, conversations, messages vocaux (fonction Edge « delete-account »).
+        const { data } = await supabase.auth.getSession();
+        if (data.session) {
+          try {
+            const { error } = await withTimeout(supabase.functions.invoke('delete-account', { method: 'POST' }), 15000);
+            if (error) return 'L’effacement sur le serveur a échoué. Vérifie ta connexion internet puis réessaie : rien n’a été effacé.';
+          } catch {
+            return 'Serveur injoignable. Vérifie ta connexion internet puis réessaie : rien n’a été effacé.';
+          }
+          await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+        }
+        // 2. Sur le téléphone : profil, codes, rappel de traitement, réglages, session.
+        await AsyncStorage.clear().catch(() => {});
+        setPlayer(null);
+        setBookings([]);
+        setSettings({ lang: 'fr', shakeToHide: true });
+        return null;
+      },
     }),
     [ready, settings, player, createPlayer, recordGame, bookings],
   );

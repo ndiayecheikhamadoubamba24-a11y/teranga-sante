@@ -15,7 +15,7 @@ Application ludique et confidentielle (VIH, jeunes 18–35 ans, Sénégal).
 1. Dashboard Supabase → **SQL Editor** → exécuter dans l'ordre :
    `supabase/migrations/20261114000000_init.sql`, `20261115000000_admin.sql`, `20261116000000_chat.sql`,
    `20261117000000_super_admin_role.sql` **(seul, puis cliquer Run)**, `20261117000100_super_admin.sql`, `20261118000000_temp_password.sql`,
-   `20261119000000_site.sql`, `20261120000000_team.sql`, `20261121000000_nurses.sql`, `20261122000000_ai.sql`, `20261123000000_nurse_phone.sql`, puis `supabase/seed.sql` (données fictives).
+   `20261119000000_site.sql`, `20261120000000_team.sql`, `20261121000000_nurses.sql`, `20261122000000_ai.sql`, `20261123000000_nurse_phone.sql`, `20261124000000_privacy.sql`, puis `supabase/seed.sql` (données fictives).
 2. **Authentication → Sign In / Providers** → activer **Allow anonymous sign-ins** (usagers sans compte, pseudo uniquement).
 3. Comptes et données de démo (6 mois de rendez-vous, 14 régions, conversations, signalements) — en local, avec la clé secrète :
    ```bash
@@ -52,6 +52,21 @@ uniquement par des fonctions serveur.
   40 messages IA par jour et par utilisateur. Ni le texte ni l'audio ne sont conservés (seul le sujet, pour les stats).
 - **Jeu** : dans l'admin, *Contenus → Jeux → Générer avec l'IA*. Les questions arrivent en **brouillon** avec la mention
   « Générée par l'IA » ; une infirmière les relit puis les publie pour qu'elles apparaissent dans le jeu.
+
+### Données personnelles : effacement et durées de conservation
+
+Teranga Santé traite des **données de santé** : la conformité (loi sénégalaise n° 2008-12, CDP) est décrite dans
+[`docs/CONFORMITE.md`](docs/CONFORMITE.md), avec la liste de ce qui reste **à faire par l'équipe** avant la mise en ligne.
+
+1. Exécuter `supabase/migrations/20261124000000_privacy.sql` (acceptation des CGU, effacement, purge).
+2. Déployer `delete-account` (bouton « Effacer toutes mes données » de l'app) et `purge-data` :
+   `supabase functions deploy delete-account` et `supabase functions deploy purge-data`
+   (via l'éditeur du Dashboard : coller aussi le fichier `supabase/functions/_shared/erase.ts` sous le même nom).
+3. Secret `CRON_SECRET` = une longue chaîne aléatoire (`openssl rand -hex 32`).
+4. Planifier la purge chaque jour : Supabase → **Integrations → Cron** → *Create job* → type **Supabase Edge Function**,
+   fonction `purge-data`, méthode POST, planning `17 3 * * *`, en-tête `x-cron-secret: <CRON_SECRET>`.
+5. Renseigner les informations légales : `apps/web/src/lib/legal.ts` (tous les champs `[À COMPLÉTER]`),
+   `VITE_SITE_URL` (site), `EXPO_PUBLIC_SITE_URL`, `EXPO_PUBLIC_PRIVACY_EMAIL` et le fournisseur de tuiles de carte (app).
 
 ### Créer le premier super admin (sans le script de démo)
 

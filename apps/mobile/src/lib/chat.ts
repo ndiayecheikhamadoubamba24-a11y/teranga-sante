@@ -9,7 +9,7 @@ export type Conversation = { id: string; nurse_id: string | null; alias: string 
 export type Message = {
   id: string;
   conversation_id: string;
-  sender_id: string;
+  sender_id: string | null; // null : auteur dont le compte a été supprimé
   body: string | null;
   audio_path: string | null;
   kind: 'text' | 'audio' | 'booking_offer' | 'referral';

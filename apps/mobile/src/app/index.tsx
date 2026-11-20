@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Flag, Logo, WaxBand } from '../components/Illustrations';
 import { Bubble, tap } from '../components/ui';
 import type { Lang } from '../lib/i18n';
+import { TERMS_VERSION } from '../lib/legal';
 import { useStore } from '../lib/store';
 import { colors, fonts, radius, shadow, spacing } from '../theme';
 
@@ -21,7 +22,8 @@ export default function Splash() {
   const choose = (l: Lang) => {
     tap();
     setLang(l);
-    router.replace(player ? '/accueil' : '/profil');
+    // Nouveau profil, ou conditions d'utilisation mises à jour : passage par l'écran profil pour les accepter.
+    router.replace(player && player.termsVersion === TERMS_VERSION ? '/accueil' : '/profil');
   };
 
   return (
@@ -51,6 +53,7 @@ export default function Splash() {
             </Pressable>
           ))}
         </View>
+        <Text style={styles.langNote}>Wolof et pulaar : traduction en cours, l’application s’affiche en français pour l’instant.</Text>
       </View>
       <WaxBand height={30} />
     </SafeAreaView>
@@ -60,6 +63,7 @@ export default function Splash() {
 const styles = StyleSheet.create({
   root: { flex: 1 },
   top: { alignItems: 'center', paddingTop: spacing(4) },
+  langNote: { fontFamily: fonts.regular, fontSize: 11, color: colors.muted, textAlign: 'center', marginTop: spacing(2) },
   tagline: { fontFamily: fonts.semibold, fontSize: 15, color: colors.night, textAlign: 'center', marginTop: spacing(2) },
   hero: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: spacing(6) },
   bubble: { maxWidth: 280, paddingHorizontal: spacing(5), paddingVertical: spacing(4) },

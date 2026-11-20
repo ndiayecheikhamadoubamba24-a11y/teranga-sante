@@ -75,6 +75,7 @@ export default function NurseDashboard() {
 
   return (
     <div className="page">
+      <h1 className="sr-only">Tableau de bord</h1>
       <div className="grid grid-4">
         <div className="kpi green"><div className="icon"><CalendarDays /></div><div className="value">{today.length}</div><div className="label">Rdv du jour</div></div>
         <div className="kpi blue"><div className="icon"><MessageCircle /></div><div className="value">{unread}</div><div className="label">Messages non lus</div></div>

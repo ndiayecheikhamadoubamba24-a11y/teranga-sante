@@ -14,7 +14,8 @@ export function tap(style: Haptics.ImpactFeedbackStyle = Haptics.ImpactFeedbackS
 type Variant = 'green' | 'orange' | 'blue' | 'red' | 'light' | 'whatsapp';
 const VARIANTS: Record<Variant, { bg: string; edge: string; fg: string }> = {
   green: { bg: colors.green, edge: colors.greenDark, fg: colors.white },
-  orange: { bg: colors.orange, edge: colors.orangeDark, fg: colors.white },
+  // Fond foncé (#C94C00) : 4,65:1 avec le texte blanc (WCAG AA) ; l'orange de marque ne fait que 3,56:1.
+  orange: { bg: '#C94C00', edge: colors.orangeDark, fg: colors.white },
   blue: { bg: colors.blue, edge: colors.blueDark, fg: colors.white },
   red: { bg: colors.red, edge: '#B71C1C', fg: colors.white },
   light: { bg: colors.creamDark, edge: colors.border, fg: colors.night },

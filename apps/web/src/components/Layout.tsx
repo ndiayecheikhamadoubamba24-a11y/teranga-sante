@@ -5,11 +5,13 @@ import {
 import { type ReactNode, useCallback, useEffect, useState } from 'react';
 import { Navigate, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
+import { useMeta } from '../lib/meta';
 import { ROLE_LABEL } from '../lib/format';
 import { supabase, type ProRole } from '../lib/supabase';
 import { CentreProvider, useCentre } from '../lib/centre';
 import { useRealtime } from '../lib/useRealtime';
 import { initials, LogoInline, StatusSelect, useToast } from './ui';
+import { TermsGate } from './TermsGate';
 
 type Item = { to: string; label: string; icon: ReactNode; badge?: 'messages' };
 
@@ -89,6 +91,7 @@ function CentreSwitcher() {
 }
 
 export function Layout() {
+  useMeta({ title: 'Espace professionnel', noindex: true });
   const { loading, session, pro, setStatus, signOut } = useAuth();
   const navigate = useNavigate();
   const toast = useToast();
@@ -117,9 +120,10 @@ export function Layout() {
   const homeAlerts = pro.role === 'national_admin' || pro.role === 'super_admin' ? '/signalements' : pro.role === 'manager' ? '/stocks' : HOME_BY_ROLE[pro.role];
 
   return (
+    <TermsGate>
     <CentreProvider>
     <div className="shell">
-      <aside className="sidebar">
+      <aside className="sidebar" aria-label="Menu de l’espace professionnel">
         <div className="logo"><LogoInline height={40} light /></div>
         <nav className="nav" aria-label="Menu principal">
           {MENUS[pro.role].map((m) => (
@@ -135,7 +139,12 @@ export function Layout() {
             <LogOut size={18} /><span className="label">Déconnexion</span>
           </button>
         </nav>
-        <div className="secure"><Lock size={14} /><span>Accès sécurisé et traçable</span></div>
+        <div className="secure"><Lock size={14} aria-hidden="true" /><span>Accès sécurisé et traçable</span></div>
+        <nav className="legal-links" aria-label="Informations légales">
+          <NavLink to="/mentions-legales">Mentions légales</NavLink>
+          <NavLink to="/confidentialite">Confidentialité</NavLink>
+          <NavLink to="/cgu">CGU</NavLink>
+        </nav>
       </aside>
 
       <div className="main">
@@ -155,9 +164,12 @@ export function Layout() {
           </button>
           <span className="pill muted no-dot" title="Langue de l’interface">FR</span>
         </header>
-        <Outlet />
+        <main id="contenu">
+          <Outlet />
+        </main>
       </div>
     </div>
     </CentreProvider>
+    </TermsGate>
   );
 }

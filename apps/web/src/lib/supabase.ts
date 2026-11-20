@@ -45,6 +45,8 @@ export type Pro = {
   status: ProStatus;
   /** Mot de passe provisoire donné par le super admin : à changer avant tout accès. */
   must_change_password?: boolean;
+  /** Version des CGU acceptée (null = jamais). */
+  terms_version?: string | null;
   centre?: { name: string } | null;
 };
 
@@ -73,6 +75,7 @@ export type Booking = {
 
 export type Conversation = {
   id: string;
+  player_id: string;
   nurse_id: string | null;
   alias: string | null;
   topic: string | null;
@@ -85,7 +88,7 @@ export type Conversation = {
 export type Message = {
   id: string;
   conversation_id: string;
-  sender_id: string;
+  sender_id: string | null; // null : auteur dont le compte a été supprimé
   body: string | null;
   audio_path?: string | null;
   kind: 'text' | 'audio' | 'booking_offer' | 'referral';

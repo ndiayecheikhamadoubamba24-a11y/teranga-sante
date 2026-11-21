@@ -299,7 +299,7 @@ async function explainQuizError(error: { message: string; context?: unknown }): 
   const res = error.context instanceof Response ? error.context : null;
   if (!res) {
     // Aucune réponse HTTP exploitable : la fonction n'existe pas sous ce nom, ou elle plante avant de répondre.
-    return 'La fonction « ai-quiz » ne répond pas. Vérifie dans Supabase → Edge Functions qu’elle existe sous ce nom exact, puis ouvre ses « Logs » : une erreur au démarrage s’y affiche.';
+    return 'La fonction « ai-quiz » est introuvable ou ne démarre pas. Le plus souvent, elle n’est pas déployée : Supabase → Edge Functions doit lister « ai-quiz » (nom exact). Si elle y est, ouvre ses Logs pour voir l’erreur de démarrage.';
   }
   let body: { error?: string; message?: string; code?: string } = {};
   try { body = await res.clone().json(); } catch { /* corps non JSON */ }

@@ -294,6 +294,25 @@ function Editor({ item, onChange, onClose, onSaved }: { item: Item; onChange: (i
   );
 }
 
+/** Message d'erreur précis pour « Générer avec l'IA » : on distingue fonction absente, plantage, clé manquante, refus. */
+async function explainQuizError(error: { message: string; context?: unknown }): Promise<string> {
+  const res = error.context instanceof Response ? error.context : null;
+  if (!res) {
+    // Aucune réponse HTTP exploitable : la fonction n'existe pas sous ce nom, ou elle plante avant de répondre.
+    return 'La fonction « ai-quiz » ne répond pas. Vérifie dans Supabase → Edge Functions qu’elle existe sous ce nom exact, puis ouvre ses « Logs » : une erreur au démarrage s’y affiche.';
+  }
+  let body: { error?: string; message?: string; code?: string } = {};
+  try { body = await res.clone().json(); } catch { /* corps non JSON */ }
+  const detail = body.error ?? body.message ?? '';
+  if (res.status === 404 || body.code === 'NOT_FOUND') return 'La fonction « ai-quiz » n’est pas déployée : Supabase → Edge Functions → Deploy a new function, nommée exactement ai-quiz (voir le README).';
+  if (/GEMINI_API_KEY/.test(detail)) return 'La clé GEMINI_API_KEY manque : Supabase → Edge Functions → Secrets → ajouter GEMINI_API_KEY, puis réessayer (pas besoin de redéployer).';
+  if (res.status === 401) return `Session refusée par la fonction (${detail || 'jeton invalide'}). Déconnecte-toi puis reconnecte-toi ; si ça continue, vérifie le réglage « Verify JWT » de la fonction ai-quiz.`;
+  if (/IA indisponible \((400|403)\)/.test(detail)) return `${detail} : la clé Gemini est refusée par Google (clé invalide, API non activée ou région non autorisée). Vérifie la clé sur aistudio.google.com.`;
+  if (/IA indisponible \(429\)/.test(detail)) return `${detail} : quota Gemini dépassé. Réessaie plus tard ou passe à une clé avec facturation.`;
+  if (/IA indisponible \(404\)/.test(detail)) return `${detail} : modèle Gemini introuvable. Retire ou corrige le secret GEMINI_MODEL (défaut : gemini-2.5-flash).`;
+  return detail ? `${detail} (code ${res.status})` : `Erreur ${res.status} de la fonction « ai-quiz » : consulte ses Logs dans Supabase.`;
+}
+
 /** Génération de questions Vrai ou Faux par l'IA (Gemini, fonction serveur ai-quiz) : créées en brouillon. */
 function GenerateModal({ onClose, onDone }: { onClose: () => void; onDone: () => void }) {
   const toast = useToast();
@@ -304,15 +323,7 @@ function GenerateModal({ onClose, onDone }: { onClose: () => void; onDone: () =>
     setBusy(true);
     const { data, error } = await supabase.functions.invoke('ai-quiz', { body: { count, topic } });
     setBusy(false);
-    if (error) {
-      let msg = error.message;
-      try {
-        const ctx = (error as { context?: Response }).context;
-        if (ctx) msg = (await ctx.json()).error ?? msg;
-      } catch {}
-      if (/Failed to send|non-2xx|404/i.test(msg)) msg = 'La fonction serveur « ai-quiz » n’est pas déployée ou la clé GEMINI_API_KEY manque (voir le README).';
-      return toast(msg);
-    }
+    if (error) return toast(await explainQuizError(error));
     toast(`${data.inserted} question(s) générée(s) en brouillon : relis-les puis publie-les.`);
     onDone();
   };

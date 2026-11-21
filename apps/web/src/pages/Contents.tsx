@@ -301,13 +301,19 @@ async function explainQuizError(error: { message: string; context?: unknown }): 
     // Aucune réponse HTTP exploitable : la fonction n'existe pas sous ce nom, ou elle plante avant de répondre.
     return 'La fonction « ai-quiz » est introuvable ou ne démarre pas. Le plus souvent, elle n’est pas déployée : Supabase → Edge Functions doit lister « ai-quiz » (nom exact). Si elle y est, ouvre ses Logs pour voir l’erreur de démarrage.';
   }
-  let body: { error?: string; message?: string; code?: string } = {};
+  let body: { error?: string; message?: string; code?: string; reason?: string } = {};
   try { body = await res.clone().json(); } catch { /* corps non JSON */ }
   const detail = body.error ?? body.message ?? '';
   if (res.status === 404 || body.code === 'NOT_FOUND') return 'La fonction « ai-quiz » n’est pas déployée : Supabase → Edge Functions → Deploy a new function, nommée exactement ai-quiz (voir le README).';
   if (/GEMINI_API_KEY/.test(detail)) return 'La clé GEMINI_API_KEY manque : Supabase → Edge Functions → Secrets → ajouter GEMINI_API_KEY, puis réessayer (pas besoin de redéployer).';
   if (res.status === 401) return `Session refusée par la fonction (${detail || 'jeton invalide'}). Déconnecte-toi puis reconnecte-toi ; si ça continue, vérifie le réglage « Verify JWT » de la fonction ai-quiz.`;
-  if (/IA indisponible \((400|403)\)/.test(detail)) return `${detail} : la clé Gemini est refusée par Google (clé invalide, API non activée ou région non autorisée). Vérifie la clé sur aistudio.google.com.`;
+  if (/IA indisponible \((400|403)\)/.test(detail)) {
+    const r = body.reason ?? '';
+    if (/API_KEY_INVALID|API key not valid/i.test(r)) return `${detail} : Google ne reconnaît pas la clé (API_KEY_INVALID). Crée une clé sur aistudio.google.com (elle commence par « AIza ») et remplace le secret GEMINI_API_KEY.`;
+    if (/location is not supported|FAILED_PRECONDITION/i.test(r)) return `${detail} : Google refuse la région du serveur pour cette clé (${r}). Active la facturation sur le projet Google de la clé, ou utilise une clé d’un projet avec facturation.`;
+    if (/SERVICE_DISABLED|has not been used|is disabled/i.test(r)) return `${detail} : l’API « Generative Language » n’est pas activée sur le projet Google de cette clé. Active-la dans Google Cloud, ou crée la clé depuis aistudio.google.com.`;
+    return `${detail} : Google refuse la requête${r ? ` (${r})` : ''}. Vérifie la clé sur aistudio.google.com.`;
+  }
   if (/IA indisponible \(429\)/.test(detail)) return `${detail} : quota Gemini dépassé. Réessaie plus tard ou passe à une clé avec facturation.`;
   if (/IA indisponible \(404\)/.test(detail)) return `${detail} : modèle Gemini introuvable. Retire ou corrige le secret GEMINI_MODEL (défaut : gemini-2.5-flash).`;
   return detail ? `${detail} (code ${res.status})` : `Erreur ${res.status} de la fonction « ai-quiz » : consulte ses Logs dans Supabase.`;

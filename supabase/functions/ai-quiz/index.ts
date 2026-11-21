@@ -63,7 +63,14 @@ Réponds UNIQUEMENT avec un tableau JSON :
   if (!res.ok) {
     const detail = await res.text();
     console.error('Gemini', res.status, detail.slice(0, 500));
-    return json({ error: `IA indisponible (${res.status})` }, 502);
+    // Motif renvoyé par Google (ex. API_KEY_INVALID, « User location is not supported ») : il ne contient pas la clé.
+    let reason = '';
+    try {
+      const e = JSON.parse(detail).error ?? {};
+      const code = (e.details ?? []).map((d: { reason?: string }) => d.reason).find(Boolean) ?? e.status ?? '';
+      reason = [code, e.message].filter(Boolean).join(' — ').slice(0, 300);
+    } catch { /* réponse non JSON */ }
+    return json({ error: `IA indisponible (${res.status})`, reason }, 502);
   }
   const out = await res.json();
   const text: string = out?.candidates?.[0]?.content?.parts?.map((p: { text?: string }) => p.text ?? '').join('') ?? '';
